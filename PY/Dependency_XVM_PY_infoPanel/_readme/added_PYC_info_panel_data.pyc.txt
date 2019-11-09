@@ -1,0 +1,4 @@
+- create a new folder inside ..\World_of_Tanks\res_mods\configs\xvm\py_macro
+- place the info_panel_data.py inside this folder
+- start WoT (this compiles the .py into a .pyc)
+- add the .pyc to the archive (keep the py)
