@@ -2,6 +2,7 @@ import BigWorld
 import ResMgr
 import nations
 from Vehicle import Vehicle
+from Avatar import PlayerAvatar
 from items import _xml
 from constants import ITEM_DEFS_PATH
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
@@ -46,10 +47,11 @@ ResMgr.purge(xmlPath, True)
 
 
 def reset(isDead=False):
-    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, shotsDescr
+    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, shotsDescr, quantityShells
     if isDead:
         shellType = None
         shotsDescr = None
+        quantityShells = {}
     else:
         shellType = config.get('sight/shellType/not_shell', '')
     shellSpeed = None
@@ -61,8 +63,8 @@ def reset(isDead=False):
     as_event('ON_AMMO_CHANGED')
 
 
-@registerEvent(ConsumablesPanel, '_onShellsAdded')
-def infoChargedShell_onShellsAdded(self, intCD, descriptor, quantity, _, gunSettings):
+@registerEvent(ConsumablesPanel, '_ConsumablesPanel__onShellsAdded')
+def infoChargedShell__onShellsAdded(self, intCD, descriptor, quantity, _, gunSettings):
     global quantityShells
     if battle.isBattleTypeSupported:
         quantityShells[intCD] = quantity
@@ -115,11 +117,11 @@ def infoChargedShell__onCurrentShellChanged(self, intCD):
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global playerVehicleID, shotsDescr
+    global playerVehicleID #, shotsDescr
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         playerVehicleID = self.id
-        shotsDescr = self.typeDescriptor.gun.shots
-        reset(True)
+        # shotsDescr = self.typeDescriptor.gun.shots
+        # reset(True)
 
 
 @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
@@ -127,6 +129,10 @@ def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
     if (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
         reset(True)
 
+
+@registerEvent(PlayerAvatar, '_PlayerAvatar__destroyGUI')
+def PlayerAvatar__destroyGUI(self):
+    reset(True)
 
 @xvm.export('sight.shellType', deterministic=False)
 def sight_shellType():
