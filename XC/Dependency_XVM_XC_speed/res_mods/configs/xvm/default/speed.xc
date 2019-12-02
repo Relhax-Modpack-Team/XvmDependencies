@@ -530,6 +530,7 @@
 	"usa-A126_PzVI_Tiger_II_capt": "<b><font size='15' color='#4CFF00'> 38/12 <font size='12' color='#4CFF00'> km/h </font></b>",
 	"usa-A127_TL_1_LPC": "<b><font size='15' color='#4CFF00'>  <font size='12' color='#4CFF00'> km/h </font></b>",
     "usa-A12_T32": "<b><font size='15' color='#4CFF00'> 35/14 <font size='12' color='#4CFF00'> km/h </font></b>",
+	"usa-A130_Super_Hellcat": "<b><font size='15' color='#4CFF00'> 72/20 <font size='12' color='#4CFF00'> km/h </font></b>",
     "usa-A13_T34_hvy": "<b><font size='15' color='#4CFF00'> 35/12 <font size='12' color='#4CFF00'> km/h </font></b>",
     "usa-A13_T34_hvy_BF": "<b><font size='15' color='#4CFF00'> 35/12 <font size='12' color='#4CFF00'> km/h </font></b>",
 	"usa-A13_T34_hvy_FL": "<b><font size='15' color='#4CFF00'> 35/12 <font size='12' color='#4CFF00'> km/h </font></b>",

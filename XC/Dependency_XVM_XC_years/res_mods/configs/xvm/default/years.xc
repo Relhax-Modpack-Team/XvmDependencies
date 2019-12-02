@@ -531,6 +531,7 @@
     "usa-A126_PzVI_Tiger_II_capt": "<b><font color='#FFD800'> 1943 </font></b>",
     "usa-A127_TL_1_LPC": "<b><font color='#FFD800'> 1957 </font></b>",	
     "usa-A12_T32": "<b><font color='#FFD800'> 1945 </font></b>",
+	"usa-A130_Super_Hellcat": "<b><font color='#FFD800'> 1943 </font></b>",
     "usa-A13_T34_hvy": "<b><font color='#FFD800'> 1945 </font></b>",
     "usa-A13_T34_hvy_BF": "<b><font color='#FFD800'> 1945 </font></b>",
 	"usa-A13_T34_hvy_FL": "<b><font color='#FFD800'> 1945 </font></b>",

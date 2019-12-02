@@ -530,6 +530,7 @@
 	"usa-A126_PzVI_Tiger_II_capt":"<font>150/80/80</font>",
 	"usa-A127_TL_1_LPC":"<font>88/50/25 </font>",
     "usa-A12_T32":"<font>127/76/51 </font>",
+	"usa-A130_Super_Hellcat":"<font>12/12/12</font>",
     "usa-A13_T34_hvy":"<font>102/76/51</font>",
     "usa-A13_T34_hvy_BF":"<font>102/76/51</font>",
 	"usa-A13_T34_hvy_FL":"<font>102/76/51</font>",
