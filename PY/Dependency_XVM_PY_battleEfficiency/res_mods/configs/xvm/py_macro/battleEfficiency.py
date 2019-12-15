@@ -1,6 +1,5 @@
 ﻿import traceback
 from BigWorld import player
-from json import dumps
 from re import sub
 from math import log
 from Avatar import PlayerAvatar
@@ -215,12 +214,8 @@ def as_setDataS(base, self, data):
     if not (battleEfficiencyConfig['enabled'] and battleEfficiencyConfig['battleResultsWindow']['enabled']):
         return base(self, data)
     
-    def _logLargeData(d):
-        pretty_d = dumps(d, indent = 2)
-        print pretty_d
-    
     def _normalizeString(s):
-        return sub('<.*?>', '', s.replace('\xc2\xa0', '').replace('.', ''))
+        return sub('<.*?>', '', s.replace('\xc2\xa0', '').replace('.', '').replace(',', ''))
     
     def _splitArenaStr(s):
         _s = s.replace(u'\xa0\u2014', '-').replace(u'\u2013', '-')
@@ -274,7 +269,6 @@ def as_setDataS(base, self, data):
         data['common']['arenaStr'] = textFormat
     except:
         traceback.print_exc()
-        _logLargeData(data)
         data['common']['arenaStr'] += '  <font color="#FE0E00">efficiency error!</font>'
     
     efficiencyCalculator.reset()
