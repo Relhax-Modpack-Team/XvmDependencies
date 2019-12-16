@@ -1,11 +1,12 @@
 ﻿from BigWorld import player, target
 from Avatar import PlayerAvatar
-from messenger import MessengerEntry
 from gui.shared.utils.TimeInterval import TimeInterval
-from xvm import info_panel_data
-from xvm_main.python import config
+from messenger import MessengerEntry
 from xfw import overrideMethod, registerEvent
 from xfw_actionscript.python import as_event
+from xvm import info_panel_data
+from xvm_main.python import config
+from xvm_main.python.xvm import l10n
 
 infoPanelConfig = config.get('infoPanel', {'enabled': False, 'showFor': 'all', 'aliveOnly': False, 'altKey': None})
 
@@ -26,6 +27,11 @@ MACROS = [
 ]
 
 ###
+
+def _getL10n(text):
+    if text.find('{{l10n:') > -1:
+        return l10n(text)
+    return text
 
 def _isEntitySatisfiesConditions(entity):
     if (entity is None) or not hasattr(entity, 'publicInfo'):
@@ -68,7 +74,7 @@ class infoPanel(object):
                     funcName = macro.replace('{', '').replace('}', '')
                     funcResponse = self.getFuncResponse(funcName)
                     textFormat = textFormat.replace(macro, funcResponse)
-            self.textsFormatted.append(textFormat)
+            self.textsFormatted.append(_getL10n(textFormat))
 
     def handleKey(self, isDown):
         if isDown:
@@ -134,7 +140,7 @@ def handleKey(self, isDown, key, mods):
     infoPanel.handleKey(isDown)
 
 @registerEvent(PlayerAvatar, '_PlayerAvatar__destroyGUI')
-def destroyGUI(self):
+def _PlayerAvatar__destroyGUI(self):
     if not infoPanelConfig['enabled']:
         return
     infoPanel.reset()
