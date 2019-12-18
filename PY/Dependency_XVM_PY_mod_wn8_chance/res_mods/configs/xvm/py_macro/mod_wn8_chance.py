@@ -7,6 +7,8 @@ from debug_utils import _doLog
 
 import xfw
 from xvm_main.python.stats import _stat, _Stat
+from xvm_main.python import utils
+from xvm_main.python.consts import DYNAMIC_VALUE_TYPE
 import xvm_main.python.config as xvm_config
 import xvm_main.python.vehinfo as xvm_vehinfo
 from xvm_main.python.consts import XVM_COMMAND
@@ -104,35 +106,28 @@ def alliesAliveRating():
 def alliesAliveRatingRatio():
     if enemies_wn8 != 0 and allies_wn8 != 0:
         if enemies_wn8 > allies_wn8:
-            return int(50 - (1.0 - allies_wn8 / enemies_wn8) * 50)
+            x = int(50 - (1.0 - allies_wn8 / enemies_wn8) * 50)
         else:
-            return int(50 + (1.0 - enemies_wn8 / allies_wn8) * 50)
+            x = int(50 + (1.0 - enemies_wn8 / allies_wn8) * 50)
     else:
-        return int(0)
-    return 
+        x = int(0)
 
-@xvm.export('c_alliesAliveRatingRatio', deterministic=False)
-def c_alliesAliveRatingRatio():
+    return x
+
+
+@xvm.export('TeamRatingRatio', deterministic=False)
+def TeamRatingRatio():
+    color = '#FFFFFF'
     if enemies_wn8 != 0 and allies_wn8 != 0:
-        if enemies_wn8 > allies_wn8:
-            x = float(50 - (1.0 - allies_wn8 / enemies_wn8) * 50)
+        if allies_wn8 > enemies_wn8:
+            return '<font color="#00EE00">{} &gt; {}</font>'.format(int(allies_wn8), int(enemies_wn8))
+        elif allies_wn8 < enemies_wn8:
+            return '<font color="#EE0000">{} &lt; {}</font>'.format(int(allies_wn8), int(enemies_wn8))
         else:
-            x = float(50 + (1.0 - enemies_wn8 / allies_wn8) * 50)
-        if x > 89.5:
-            return '#D042F3'
-        elif x > 74.5:
-            return '#02C9B3'
-        elif x > 59.5:
-            return '#60FF00'
-        elif x > 39.5:
-            return '#F8F400'
-        elif x > 24.5:
-            return '#FE7903'
-        else:
-            return '#FE0E00'
+            return '<font color="00EE00">{} = {}</font>'.format(int(allies_wn8), int(enemies_wn8))
     else:
-        return '#FFFFFF'
-    return
+        return '<font color="#FFFFFF">0</font>'
+
 
 def setVehicleStats(vid, vehicle):
     global enemies_wn8, allies_wn8
@@ -190,7 +185,7 @@ def _Stat__respond(self):
 
 @xfw.registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
 def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    LOG_DEBUG('FragsCollectableStats.addVehicleStatusUpdate(%s) [vehCD=%s]' % (vInfoVO, vInfoVO.vehicleType.compactDescr))
+    #LOG_DEBUG('FragsCollectableStats.addVehicleStatusUpdate(%s) [vehCD=%s]' % (vInfoVO, vInfoVO.vehicleType.compactDescr))
 
     global enemies_wn8, allies_wn8
 
