@@ -87,7 +87,10 @@
     "france-F109_AMD_Panhard_178B":"<font>20/13/13</font>",          	
     "france-F10_AMX_50B":"<font>170/30/30</font>",
     "france-F10_AMX_50B_fallout":"<font>170/30/30</font>",
-	"france-F110_Lynx_6x6":"<font>13/13/13</font>", 
+	"france-F110_Lynx_6x6":"<font>13/13/13</font>",
+    "france-F111_AM39_Gendron_Somua":"<font>15/15/15</font>",      
+    "france-F114_Projet_4_1":"<font>55/40/30</font>",                
+    "france-F116_Bat_Chatillon_Bourrasque":"<font>40/20/20</font>",  	
     "france-F11_Renault_G1R":"<font>60/60/60</font>",
     "france-F12_Hotchkiss_H35":"<font>40/40/40</font>",
 	"france-F112_M10_RBFM":"<font>38.1/19.1/19.1</font>",
@@ -120,7 +123,7 @@
     "france-F36_AMX_AC_Mle1948_IGR":"<font>150/55/40</font>",
     "france-F37_AMX50_Foch":"<font>150/55/40 </font>",
     "france-F38_Bat_Chatillon155_58":"<font>16/16/12</font>",
-	"france-F42_AMR_35":"<font>15/10/10</font>",
+    "france-F42_AMR_35":"<font>15/10/10</font>",
     "france-F44_Somua_S35":"<font>47/40/35</font>",
     "france-F49_RenaultR35":"<font>40/40/32</font>",
     "france-F50_FCM36_20t":"<font>40/20/20</font>",
@@ -686,9 +689,13 @@
     "ussr-R15_S-51":"<font>60/60/60</font>",
     "ussr-R16_SU-18":"<font>16/16/16</font>",
     "ussr-R160_T_50_2":"<font>37/37/37</font>",
-	"ussr-R161_T_116":"<font>15/13/13</font>",
-	"ussr-R165_Object_703_II":"<font>140/100/60</font>",
+	"ussr-R161_T_116":"<font>15/13/13</font>",	
 	"ussr-R165_Object_703_II_2":"<font>140/100/60</font>",
+	"ussr-R169_ST_II":"<font>150/140/100</font>",
+	"ussr-R170_IS_2_II":"<font>110/90/60</font>",
+	"ussr-R171_IS_3_II":"<font>145/90/60</font>",
+	"ussr-R172_Object_752":"<font>180/85/80</font>",
+	"ussr-R165_Object_703_II":"<font>140/100/60</font>",
     "ussr-R17_SU-100":"<font>75/45/45</font>",
     "ussr-R18_SU-152":"<font>75/60/60</font>",
     "ussr-R18_SU-152_IGR":"<font>75/60/60</font>",
@@ -777,3 +784,6 @@
     
   }
 }
+                 
+             
+    
