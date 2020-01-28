@@ -1,5 +1,6 @@
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
+from xfw.events import registerEvent, overrideMethod
 
 import BigWorld
 from Account import PlayerAccount
@@ -8,7 +9,6 @@ from gui.Scaleform.daapi.view.battle.shared.messages.fading_messages import Fadi
 from helpers.EdgeDetectColorController import g_instance
 
 
-getArenaDP = None
 isSquad = False
 isTeamKill = False
 
@@ -65,8 +65,6 @@ def __changeColor(base, diff):
 
 @registerEvent(PlayerAvatar, 'onEnterWorld')
 def onEnterWorld(self, prereqs):
-    global getArenaDP
-    getArenaDP = self.guiSessionProvider.getArenaDP()
     g_instance.updateColors()
 
 
@@ -75,6 +73,7 @@ def PlayerAvatar_targetFocus(self, entity):
     global isSquad, isTeamKill
     if entity in self._PlayerAvatar__vehicles:
         prev_isSquad = isSquad
+        getArenaDP = self.guiSessionProvider.getArenaDP()
         isSquad = getArenaDP.isSquadMan(vID=entity.id)
         prev_isTeamKill = isTeamKill
         isTeamKill = getArenaDP.isTeamKiller(vID=entity.id)
