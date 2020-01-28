@@ -1,7 +1,7 @@
 from Vehicle import Vehicle
 from AvatarInputHandler.commands.siege_mode_control import SiegeModeControl
 
-from xfw import *
+from xfw.events import registerEvent
 from xvm_main.python.logger import *
 from xfw_actionscript.python import *
 import xvm_main.python.config as config
