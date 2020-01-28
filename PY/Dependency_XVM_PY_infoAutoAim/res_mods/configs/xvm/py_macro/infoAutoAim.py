@@ -7,11 +7,10 @@ from vehicle_systems.tankStructure import TankPartIndexes
 from gui.battle_control import event_dispatcher
 
 
-from xfw import *
+from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
 from xfw_actionscript.python import *
-
 
 
 targetName = None
@@ -27,7 +26,8 @@ class Arrow(object):
 
     def __init__(self):
         try:
-            self.__model = BigWorld.Model('../mods/shared_resources/xvm/res/markers/Arrow/arrow.model')
+            self.__model = BigWorld.Model(
+                '../mods/shared_resources/xvm/res/markers/Arrow/arrow.model')
         except:
             self.__model = None
         self.__motor = None
@@ -51,15 +51,18 @@ class Cylinder(object):
 
     def __init__(self):
         try:
-            self.__modelBig = BigWorld.Model('../mods/shared_resources/xvm/res/markers/cylinder/cylinder_red_big.model')
+            self.__modelBig = BigWorld.Model(
+                '../mods/shared_resources/xvm/res/markers/cylinder/cylinder_red_big.model')
         except:
             self.__modelBig = None
         try:
-            self.__modelMedium = BigWorld.Model('../mods/shared_resources/xvm/res/markers/cylinder/cylinder_red_medium.model')
+            self.__modelMedium = BigWorld.Model(
+                '../mods/shared_resources/xvm/res/markers/cylinder/cylinder_red_medium.model')
         except:
             self.__modelMedium = None
         try:
-            self.__modelSmall = BigWorld.Model('../mods/shared_resources/xvm/res/markers/cylinder/cylinder_red_small.model')
+            self.__modelSmall = BigWorld.Model(
+                '../mods/shared_resources/xvm/res/markers/cylinder/cylinder_red_small.model')
         except:
             self.__modelSmall = None
         self.__motor = None
@@ -82,7 +85,8 @@ class Cylinder(object):
         self.hideMarker()
         self.__motor = BigWorld.Servo(target.matrix)
         if target.appearance.collisions is not None:
-            hullBB = target.appearance.collisions.getBoundingBox(TankPartIndexes.HULL)
+            hullBB = target.appearance.collisions.getBoundingBox(
+                TankPartIndexes.HULL)
             vehicleLength = abs(hullBB[1][2] - hullBB[0][2])
         if vehicleLength < 4.0:
             if self.__modelSmall is not None:
@@ -104,8 +108,10 @@ def Vehicle_onEnterWorld(self, prereqs):
     if config.get('sight/enabled', True):
         if config.get('sight/autoAim/enabled', False):
             vehicle = BigWorld.entity(self.playerVehicleID)
-            value = config.get('sight/autoAim/showAutoAimMarker', 'wheels').lower()
-            isShowAutoAimMarker = vehicle.isWheeledTech if value not in ['all', 'none'] else (value == 'all')
+            value = config.get(
+                'sight/autoAim/showAutoAimMarker', 'wheels').lower()
+            isShowAutoAimMarker = vehicle.isWheeledTech if value not in [
+                'all', 'none'] else (value == 'all')
             markerType = config.get('sight/autoAim/markerType', '')
             if markerType.strip().lower() == 'cylinder':
                 marker = Cylinder()
@@ -161,7 +167,7 @@ def onLockTarget(self, state, playVoiceNotifications):
 
 @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
 def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    global targetName, targetVehicle, targetHealth, targetID, oldTargetID
+    global targetName, targetVehicle, targetHealth, targetID
     if config.get('sight/enabled', True) and (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID):
         targetName = None
         targetVehicle = None
@@ -183,5 +189,5 @@ def sight_autoAimVehicle():
 
 
 @xvm.export('sight.autoAimHealth', deterministic=False)
-def sight_autoAimVehicle():
+def sight_autoAimHealth():
     return targetHealth
