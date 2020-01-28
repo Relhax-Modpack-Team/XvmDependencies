@@ -8,6 +8,7 @@ from gui.Scaleform.daapi.view.battle.shared.ribbons_panel import BattleRibbonsPa
 from gui.Scaleform.genConsts.BATTLE_EFFICIENCY_TYPES import BATTLE_EFFICIENCY_TYPES as BET
 
 from xfw_actionscript.python import *
+from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
 from xvm_main.python.stats import _stat
 import xvm_main.python.config as config
