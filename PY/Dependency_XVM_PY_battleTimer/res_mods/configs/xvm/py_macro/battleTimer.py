@@ -5,7 +5,7 @@ from skeletons.gui.battle_session import IBattleSessionProvider
 from gui.Scaleform.daapi.view.battle.shared.battle_timers import BattleTimer
 from gui.Scaleform.daapi.view.battle.epic.battle_timer import EpicBattleTimer
 
-from xfw import *
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
 
