@@ -9,7 +9,7 @@ from AvatarInputHandler.AimingSystems.SniperAimingSystem import SniperAimingSyst
 from AvatarInputHandler.AimingSystems.StrategicAimingSystem import StrategicAimingSystem
 
 
-from xfw import *
+from xfw.events import registerEvent
 from xvm_main.python.logger import *
 from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
@@ -147,7 +147,7 @@ def set_gunAnglesPacked(self, prev):
             if smoothingID is not None:
                 cancelCallback(smoothingID)
                 smoothingID = None
-            smoothing(old_yaw + currentStepYaw, old_pitch + currentStepPitch, STEP, 1)
+            smoothing(old_yaw + currentStepYaw, old_pitch + currentStepPitch, STEP)
             old_yaw = 0 if not showHorCorners else yaw
             old_pitch = pitch
         else:
@@ -194,11 +194,11 @@ def updateCoordinates():
     updateLabels()
 
 
-def smoothing(stepYaw, stepPitch, step, c):
+def smoothing(stepYaw, stepPitch, step):
     global dataHor, dataVert, smoothingID
     dataHor, dataVert = coordinate(stepYaw, stepPitch)
     if (step + STEP) < 1.001:
-        smoothingID = callback(TIME_STEP, lambda: smoothing(stepYaw + currentStepYaw, stepPitch + currentStepPitch, step + STEP, c + 1))
+        smoothingID = callback(TIME_STEP, lambda: smoothing(stepYaw + currentStepYaw, stepPitch + currentStepPitch, step + STEP))
     else:
         smoothingID = None
     updateLabels()
