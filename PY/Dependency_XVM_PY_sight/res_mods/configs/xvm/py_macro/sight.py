@@ -17,7 +17,7 @@ from gui.battle_control.controllers.consumables.ammo_ctrl import AmmoReplayPlaye
 
 import xvm_battle.python.battle as battle
 import xvm_main.python.config as config
-from xfw.events import registerEvent, overrideMethod
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
 
