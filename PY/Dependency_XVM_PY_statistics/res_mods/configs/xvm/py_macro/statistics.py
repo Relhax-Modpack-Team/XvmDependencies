@@ -1,8 +1,8 @@
-﻿import time
+import time
 import BigWorld
 from Vehicle import Vehicle
 import constants
-from xfw import *
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 import xvm_main.python.userprefs as userprefs
 import game
