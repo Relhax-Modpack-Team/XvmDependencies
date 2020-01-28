@@ -1,4 +1,4 @@
-from xfw import *
+from xfw.events import registerEvent
 from Vehicle import Vehicle
 import BigWorld
 
