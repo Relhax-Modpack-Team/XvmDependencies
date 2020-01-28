@@ -12,6 +12,7 @@ from gui.Scaleform.locale.MENU import MENU
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
 from xfw_actionscript.python import *
+from xfw.events import registerEvent, overrideMethod
 
 
 boostersName = dict.fromkeys(BTN.values())
@@ -61,9 +62,11 @@ def readConfig():
     boosterEnabled = config.get('boosters/enabled', True)
     if boosterEnabled:
         for k in boostersName.iterkeys():
-            boostersName[k] = config.get('boosters/boostersName/{}'.format(k[8:]), None)
+            boostersName[k] = config.get(
+                'boosters/boostersName/{}'.format(k[8:]), None)
         for k in clanReservesName.iterkeys():
-            clanReservesName[k] = config.get('boosters/clanReservesName/{}'.format(k[8:]), None)
+            clanReservesName[k] = config.get(
+                'boosters/clanReservesName/{}'.format(k[8:]), None)
 
 
 readConfig()
@@ -71,7 +74,7 @@ readConfig()
 
 @overrideMethod(LobbyHeaderMeta, 'as_setBoosterDataS')
 def as_setBoosterDataS(base, self, data):
-    # log('data = %s' % data)
+    #log('data = %s' % data)
     if data['hasActiveBooster'] and boosterEnabled and config.get('boosters/hideActiveBooster', False):
         data['boosterIcon'] = BOOSTER_ICON_EMPTY
         data['boosterBg'] = BOOSTER_ICON_EMPTY
