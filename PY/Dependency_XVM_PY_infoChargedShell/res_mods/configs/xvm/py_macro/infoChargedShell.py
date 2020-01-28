@@ -9,7 +9,7 @@ from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollecta
 from gui.battle_control.battle_constants import SHELL_SET_RESULT
 from gui.Scaleform.daapi.view.battle.shared.consumables_panel import ConsumablesPanel
 
-from xfw import *
+from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
 from xfw_actionscript.python import *
