@@ -1,11 +1,12 @@
-from xvm_main.python.logger import *
-
 import BigWorld
 import cPickle
 from Avatar import PlayerAvatar
 from Vehicle import Vehicle
 from items import vehicles
 from ClientArena import ClientArena
+
+from xvm_main.python.logger import *
+from xfw.events import registerEvent
 
 
 deadPlayer = {}
