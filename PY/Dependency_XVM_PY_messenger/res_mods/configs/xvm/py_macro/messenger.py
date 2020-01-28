@@ -1,4 +1,4 @@
-from xfw import *
+from xfw.events import overrideMethod
 import messenger.gui.Scaleform.view.battle.messenger_view as messenger_view
 
 @overrideMethod(messenger_view, '_makeSettingsVO')
