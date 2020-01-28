@@ -1,13 +1,10 @@
 import BigWorld
-import math
 from Avatar import PlayerAvatar
-from string import digits
-from gui.Scaleform.daapi.view.meta.CrosshairPanelContainerMeta import CrosshairPanelContainerMeta
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
 from gui.Scaleform.daapi.view.battle.shared.crosshair.container import CrosshairPanelContainer
 from gui.Scaleform.daapi.view.battle.shared.crosshair.plugins import TargetDistancePlugin
 
-from xfw import *
+from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
 from xfw_actionscript.python import *
