@@ -1,7 +1,7 @@
 from gui.Scaleform.daapi.view.battle.shared.crosshair.plugins import SpeedometerWheeledTech
 from gui.battle_control.battle_constants import CROSSHAIR_VIEW_ID
 
-from xfw import *
+from xfw.events import overrideMethod
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
 
