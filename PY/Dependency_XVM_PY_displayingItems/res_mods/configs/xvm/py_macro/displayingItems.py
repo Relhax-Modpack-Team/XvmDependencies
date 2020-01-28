@@ -5,7 +5,7 @@ from gui.battle_control.battle_constants import CROSSHAIR_VIEW_ID
 
 import xvm_battle.python.battle as battle
 import xvm_main.python.config as config
-from xfw import *
+from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
 
 
