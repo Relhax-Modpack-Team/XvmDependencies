@@ -1,4 +1,5 @@
-from gui.Scaleform.daapi.view.battle.shared.indicators import _DamageIndicator
+from gui.Scaleform.daapi.view.battle.shared.indicators import _DamageIndicator, DamageIndicatorMeta
+
 from AvatarInputHandler.control_modes import ArcadeControlMode, SniperControlMode, StrategicControlMode
 from xvm_main.python.logger import *
 from Vehicle import Vehicle
@@ -6,6 +7,7 @@ import BigWorld
 from math import pi
 
 from xfw_actionscript.python import *
+from xfw.events import registerEvent, overrideMethod
 
 
 alpha = 0
