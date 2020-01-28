@@ -1,4 +1,4 @@
-﻿from xfw import *
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
 from xvm_main.python.stats import _stat
@@ -17,7 +17,6 @@ from helpers import dependency
 from skeletons.account_helpers.settings_core import ISettingsCore
 from constants import ARENA_GUI_TYPE
 from gui.Scaleform.daapi.view.battle.shared.minimap.plugins import ArenaVehiclesPlugin
-from gui.Scaleform.daapi.view.meta.BattleStatisticDataControllerMeta import BattleStatisticDataControllerMeta
 
 
 playersEnemyAlive = {}
@@ -338,9 +337,3 @@ def fcb_deadVehType(veh):
         return deadVehType[veh]
     else:
         return None
-
-
-@xvm.export('xvm.python_macro')
-def fcb_deadVehType():
-    log('xvm.python_macro!!!!!!!!!!!!!')
-    print 'xvm.python_macro!!!!!!!!!!!!!'
