@@ -1,5 +1,5 @@
 import BigWorld
-from xfw import *
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 import xfw
 from xvm_main.python.stats import _Stat
