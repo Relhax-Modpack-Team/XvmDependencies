@@ -1,30 +1,35 @@
 from Vehicle import Vehicle
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
-from gui.Scaleform.daapi.view.meta.PostmortemPanelMeta import PostmortemPanelMeta
 
-from xfw import *
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 
 health = 0
 maxHealth = 0
+oldHealth = 0
+dmg = None
 vehicle = None
 
 
 @registerEvent(Vehicle, 'onHealthChanged')
 def onHealthChanged(self, newHealth, attackerID, attackReasonID):
     if self.isPlayerVehicle:
-        global health
+        global health, dmg, oldHealth
         health = max(0, newHealth)
+        if oldHealth != health:
+            dmg = oldHealth - health
+            oldHealth = health
         as_event('ON_MY_HP')
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global maxHealth, health, vehicle
+    global maxHealth, health, vehicle, dmg, oldHealth
     if self.isPlayerVehicle:
         maxHealth = self.typeDescriptor.maxHealth
+        oldHealth = maxHealth
         health = self.health
         vehicle = self
+        dmg = None
         as_event('ON_MY_HP')
 
 
@@ -40,3 +45,8 @@ def my_hp_health(_health=None):
 @xvm.export('my_hp.maxHealth', deterministic=False)
 def my_hp_maxHealth():
     return maxHealth
+
+
+@xvm.export('my_hp.dmg', deterministic=False)
+def my_hp_dmg():
+    return dmg
