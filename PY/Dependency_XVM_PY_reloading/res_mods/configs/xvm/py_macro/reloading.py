@@ -44,13 +44,15 @@ def resetCallback(CallbackID):
         cancelCallback(CallbackID)
     return None
 
-
 def reloadTimer():
     global leftTime, reloadTimerCallbackID
     if leftTime is None:
         return
     leftTime = max(0.0, endReloadTime - time())
-    reloadTimerCallbackID = callback(0.1, reloadTimer) if leftTime > 0.0 else None
+    if leftTime > 0.0:
+        reloadTimerCallbackID = callback(0.1, reloadTimer)
+    else:
+        reloadTimerCallbackID = None
     if not isAutoReload:
         as_event('ON_RELOAD')
 
@@ -109,7 +111,7 @@ def reloadShotTimer():
     if leftTimeShot is None:
         return
     leftTimeShot = max(0.0, endReloadTimeShot - time())
-    if leftTime > 0.0:
+    if leftTimeShot > 0.0:
         reloadShotTimerCallbackID = callback(0.1, reloadShotTimer)
     else:
         reloadShotTimerCallbackID = None
@@ -231,13 +233,39 @@ def as_updateTotalTimeS(self, value):
 
 @registerEvent(DualGunPanelMeta, 'as_setGunStateS')
 def as_setGunStateS(self, gunId, state, timeLeft, totalTime):
-    global reloadTime, leftTime
+    global reloadTime, reloadShotTimerCallbackID, leftTimeShot
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported and isAlive:
         if reloadTime is None:
             reloadTime = round(totalTime / 1000.0, 2)
         if state == 2:
+            reloadShotTimerCallbackID = resetCallback(reloadShotTimerCallbackID)
+            leftTimeShot = 0.0
             reloading(round(timeLeft / 1000.0, 2), round(totalTime / 1000.0, 2))
         gunsState[gunId] = (state == 3)
+
+
+@registerEvent(DualGunPanelMeta, 'as_updateActiveGunS')
+def as_updateActiveGunS(self, activeGunId, timeLeft, totalTime):
+    if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 1:
+        reloadingShot(round(timeLeft / 1000.0, 2))
+
+
+@registerEvent(DualGunPanelMeta, 'as_startChargingS')
+def as_startChargingS(self, timeLeft, totalTime):
+    if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 2:
+        reloadingShot(round(timeLeft / 1000.0, 2))
+
+
+@registerEvent(DualGunPanelMeta, 'as_cancelChargeS')
+def as_cancelChargeS(self):
+    global reloadShotTimerCallbackID
+    reloadShotTimerCallbackID = resetCallback(reloadShotTimerCallbackID)
+
+
+@registerEvent(DualGunPanelMeta, 'as_setCooldownS')
+def as_setCooldownS(self, timeLeft):
+    if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 0:
+        reloadingShot(round(timeLeft / 1000.0 - reloadTime, 2))
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
@@ -261,12 +289,7 @@ def reloading_onEnterWorld(self, prereqs):
         # log('tankmenAndDevicesReload = %s' % tankmenAndDevicesReload)
         # for i, v in enumerate(self.typeDescriptor.type.crewRoles):
         #     log('typeDescriptor.type.crewRoles[%s] = %s' % (i, v))
-        # log('data = %s' % (filter(lambda x: not x.startswith('_'), dir(data))))
-        # for atr in filter(lambda x: not x.startswith('_'), dir(gun)):
-        #     log('%s = %s' % (atr, getattr(gun, atr)))
-        # log('----------------------------------------------------------')
-        # for atr in filter(lambda x: not x.startswith('_'), dir(gun.dualGun)):
-        #     log('%s = %s' % (atr, getattr(gun.dualGun, atr)))
+
         quantityInClipShells = 0
         quantityInClipShellsMax = 2 if isDualGun else gun.clip[0]
         isAutoReload = (gun.autoreload.reloadTime[0] != 0.0)
@@ -366,7 +389,13 @@ def sight_leftTimeShot():
     if not isAlive:
         return None
     if isDualGun:
-        return leftTime if (gunsState[0] + gunsState[1]) == 0 else 0
+        numberLoadedGuns = gunsState[0] + gunsState[1]
+        if numberLoadedGuns == 0:
+            return leftTime if leftTime > 0.0 else leftTimeShot
+        elif numberLoadedGuns == 1 or numberLoadedGuns == 2:
+            return leftTimeShot
+        else:
+            return 0.0
     return leftTimeShot
 
 
@@ -378,3 +407,4 @@ def sight_aReloadTime():
 @xvm.export('sight.isIncreasedReload', deterministic=False)
 def sight_isIncreasedReload():
     return '#FF0000' if increasedReload else None
+
