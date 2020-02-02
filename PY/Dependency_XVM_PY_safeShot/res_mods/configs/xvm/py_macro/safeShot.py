@@ -45,7 +45,6 @@ def addChatMessage(msg):
         player().guiSessionProvider.shared.chatCommands.proto.arenaChat.broadcast(msg, 0)
     lastChatMessageTime = serverTime()
 
-
 ###
 
 @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
@@ -64,7 +63,7 @@ def handleKeyEvent(event):
         if safeShotConfig['triggerMessage']:
             addClientMessage(safeShotConfig['triggerText']['enabled' if safeShotEnabled else 'disabled'], 0)
     
-    if not (safeShotConfig['enabled'] and not isEventBattle and (safeShotConfig['disableKey'] == event.key) and not event.isRepeatedEvent() and not MessengerEntry.g_instance.gui.isFocused()):
+    if not (safeShotConfig['enabled'] and player().isVehicleAlive and not isEventBattle and (safeShotConfig['disableKey'] == event.key) and not event.isRepeatedEvent() and not MessengerEntry.g_instance.gui.isFocused()):
         return
     elif safeShotConfig['onHold']:
         if not hotKeyPressed and event.isKeyDown():
@@ -78,24 +77,33 @@ def handleKeyEvent(event):
     else:
         return
 
-@overrideMethod(PlayerAvatar, 'shoot')
-def shoot(base, self, isRepeat = False):
+def isShotAllowed():
     if not (safeShotConfig['enabled'] and safeShotEnabled and not isEventBattle):
-        return base(self, isRepeat)
+        return True
     if target() is None:
         if safeShotConfig['wasteShotBlock']:
             addClientMessage(safeShotConfig['clientMessages']['wasteShotBlockedMessage'], 2)
-            return
+            return False
     elif hasattr(target().publicInfo, 'team'):
         if safeShotConfig['teamShotBlock'] and (player().team is target().publicInfo.team) and target().isAlive():
             if not (safeShotConfig['teamKillerShotUnblock'] and player().guiSessionProvider.getArenaDP().isTeamKiller(target().id)):
                 addChatMessage(safeShotConfig['chatMessages']['teamShotBlockedMessage'].replace('{{target-name}}', target().publicInfo.name).replace('{{target-vehicle}}', target().typeDescriptor.type.shortUserString))
                 addClientMessage(safeShotConfig['clientMessages']['teamShotBlockedMessage'], 2)
-                return
+                return False
         elif deadBlockEnabled and (not target().isAlive()) and ((deadBlockTimeOut == 0) or ((serverTime() - deadDict.get(target().id, 0)) < deadBlockTimeOut)):
             addClientMessage(safeShotConfig['clientMessages']['deadShotBlockedMessage'], 2)
-            return
-    return base(self, isRepeat)
+            return False
+    return True
+
+@overrideMethod(PlayerAvatar, 'shoot')
+def shoot(base, self, isRepeat = False):
+    if isShotAllowed():
+        base(self, isRepeat)
+
+@overrideMethod(PlayerAvatar, 'shootDualGun')
+def shootDualGun(base, self, chargeActionType, isPrepared = False, isRepeat = False):
+    if isShotAllowed():
+        base(self, chargeActionType, isPrepared, isRepeat)
 
 @registerEvent(PlayerAvatar, 'onBecomePlayer')
 def onBecomePlayer(self):
@@ -113,4 +121,4 @@ def __destroyGUI(self):
     lastChatMessageTime = None
     hotKeyPressed = False
     isEventBattle = False
-    deadDict = {}
+    deadDict.clear()
