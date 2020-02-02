@@ -1,5 +1,4 @@
-﻿import game
-from BigWorld import player, target, serverTime
+﻿from BigWorld import player, target, serverTime
 from xfw import registerEvent, overrideMethod
 from xvm_main.python import config
 from xvm_main.python.xvm import l10n
@@ -53,8 +52,8 @@ def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
     if not vInfoVO.isAlive() and safeShotEnabled and deadBlockEnabled:
         deadDict.update({vInfoVO.vehicleID: serverTime()})
 
-@registerEvent(game, 'handleKeyEvent')
-def handleKeyEvent(event):
+@registerEvent(PlayerAvatar, 'handleKey')
+def handleKey(self, isDown, key, mods):
     global hotKeyPressed
     
     def changeSafeShotState():
@@ -63,16 +62,16 @@ def handleKeyEvent(event):
         if safeShotConfig['triggerMessage']:
             addClientMessage(safeShotConfig['triggerText']['enabled' if safeShotEnabled else 'disabled'], 0)
     
-    if not (safeShotConfig['enabled'] and player().isVehicleAlive and not isEventBattle and (safeShotConfig['disableKey'] == event.key) and not event.isRepeatedEvent() and not MessengerEntry.g_instance.gui.isFocused()):
+    if not (safeShotConfig['enabled'] and self.isVehicleAlive and not isEventBattle and (safeShotConfig['disableKey'] == key) and not MessengerEntry.g_instance.gui.isFocused()):
         return
     elif safeShotConfig['onHold']:
-        if not hotKeyPressed and event.isKeyDown():
+        if not hotKeyPressed and isDown:
             hotKeyPressed = True
             changeSafeShotState()
-        elif hotKeyPressed and event.isKeyUp():
+        elif hotKeyPressed and not isDown:
             hotKeyPressed = False
             changeSafeShotState()
-    elif event.isKeyDown():
+    elif isDown:
         changeSafeShotState()
     else:
         return
