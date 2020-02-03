@@ -37,6 +37,8 @@ reloadShotTimerCallbackID = None
 tankmenAndDevicesReload = []
 increasedReload = []
 gunsState = [False, False]
+isPreparingSalvo = False
+isGunBlocked = False
 
 
 def resetCallback(CallbackID):
@@ -170,20 +172,6 @@ def reloading_setGunReloadTime(self, timeLeft, baseTime):
         reloading(timeLeft, baseTime)
 
 
-# @registerEvent(CrosshairPanelContainerMeta, 'as_autoloaderUpdateS')
-# def as_autoloaderUpdateS(self, timeLeft, baseTime, isPause=False, isStun=False, isTimerOn=False):
-#     if config.get('sight/enabled', True) and isAutoReload and not isEpicBattle:
-#         log('as_autoloaderUpdateS =    leftTeme = %s  baseTime = %s' % (timeLeft, baseTime))
-#         autoReloading(timeLeft, baseTime)
-
-
-# @registerEvent(CrosshairPanelContainerMeta, 'as_setAutoloaderReloadingS')
-# def as_setAutoloaderReloadingS(self, duration, baseTime):
-#     if config.get('sight/enabled', True) and isAutoReload and not isEpicBattle:
-#         log('as_setAutoloaderReloadingS =    duration = %s  baseTime = %s' % (duration, baseTime))
-#         autoReloading(duration, baseTime)
-
-
 @registerEvent(CrosshairPanelContainerMeta, 'as_setReloadingS')
 def reloading_as_setReloadingS(self, duration, baseTime, startTime, isReloading):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported and not isDualGun and isAlive:
@@ -246,33 +234,44 @@ def as_setGunStateS(self, gunId, state, timeLeft, totalTime):
 
 @registerEvent(DualGunPanelMeta, 'as_updateActiveGunS')
 def as_updateActiveGunS(self, activeGunId, timeLeft, totalTime):
-    if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 1:
-        reloadingShot(round(timeLeft / 1000.0, 2))
+    global isGunBlocked
+    if (gunsState[0] + gunsState[1]) == 1:
+        if timeLeft > 0:
+            isGunBlocked = True
+            reloadingShot(round(timeLeft / 1000.0, 2))
+        elif isGunBlocked:
+            isGunBlocked = False
+            as_event('ON_RELOAD')
 
 
 @registerEvent(DualGunPanelMeta, 'as_startChargingS')
 def as_startChargingS(self, timeLeft, totalTime):
+    global isPreparingSalvo
     if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 2:
+        isPreparingSalvo = True
         reloadingShot(round(timeLeft / 1000.0, 2))
 
 
 @registerEvent(DualGunPanelMeta, 'as_cancelChargeS')
 def as_cancelChargeS(self):
-    global reloadShotTimerCallbackID
+    global reloadShotTimerCallbackID, isPreparingSalvo
+    isPreparingSalvo = False
     reloadShotTimerCallbackID = resetCallback(reloadShotTimerCallbackID)
 
 
 @registerEvent(DualGunPanelMeta, 'as_setCooldownS')
 def as_setCooldownS(self, timeLeft):
+    global isPreparingSalvo
     if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 0:
+        isPreparingSalvo = False
         reloadingShot(round(timeLeft / 1000.0 - reloadTime, 2))
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def reloading_onEnterWorld(self, prereqs):
     global leftTime, reloadTime, endReloadTime, reloadTimeClip, playerVehicleID, isAutoReload, autoReloadTimes, increasedReload, gunsState
-    global quantityInClipShellsMax, quantityInClipShells, autoReloadLeftTime, autoReloadTime, tankmenAndDevicesReload, isDualGun
-    global isAlive, reloadTimesClip, reloadTimerCallbackID, autoReloadTimerCallbackID, leftTimeShot, reloadShotTimerCallbackID
+    global quantityInClipShellsMax, quantityInClipShells, autoReloadLeftTime, autoReloadTime, tankmenAndDevicesReload, isDualGun, isGunBlocked
+    global isAlive, reloadTimesClip, reloadTimerCallbackID, autoReloadTimerCallbackID, leftTimeShot, reloadShotTimerCallbackID, isPreparingSalvo
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         isAlive = True
         leftTime = None
@@ -282,6 +281,8 @@ def reloading_onEnterWorld(self, prereqs):
         autoReloadTime = None
         endReloadTime = 0.0
         gunsState = [False, False]
+        isPreparingSalvo = False
+        isGunBlocked = False
         gun = self.typeDescriptor.gun
         tankmenAndDevicesReload = [role[0] for role in self.typeDescriptor.type.crewRoles if 'loader' in role]
         tankmenAndDevicesReload.append('ammoBay')
@@ -318,8 +319,8 @@ def reloading_onEnterWorld(self, prereqs):
 
 @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
 def reloading_addVehicleStatusUpdate(self, vInfoVO):
-    global leftTime, reloadTime, endReloadTime, reloadTimeClip, autoReloadLeftTime, autoReloadTime, isAlive, leftTimeShot
-    global increasedReload, reloadTimerCallbackID, autoReloadTimerCallbackID, reloadShotTimerCallbackID
+    global leftTime, reloadTime, endReloadTime, reloadTimeClip, autoReloadLeftTime, autoReloadTime, isAlive, leftTimeShot, isGunBlocked
+    global increasedReload, reloadTimerCallbackID, autoReloadTimerCallbackID, reloadShotTimerCallbackID, isPreparingSalvo
     if (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
         isAlive = False
         leftTime = None
@@ -330,6 +331,8 @@ def reloading_addVehicleStatusUpdate(self, vInfoVO):
         autoReloadLeftTime = None
         autoReloadTime = None
         increasedReload = []
+        isPreparingSalvo = False
+        isGunBlocked = False
         reloadTimerCallbackID = resetCallback(reloadTimerCallbackID)
         autoReloadTimerCallbackID = resetCallback(autoReloadTimerCallbackID)
         reloadShotTimerCallbackID = resetCallback(reloadShotTimerCallbackID)
@@ -361,11 +364,6 @@ def sight_reloadTime():
 @xvm.export('sight.reloadTimeClip', deterministic=False)
 def sight_reloadTimeClip():
     return reloadTimeClip
-
-
-# @xvm.export('sight.isAutoReload', deterministic=False)
-# def sight_isAutoReload():
-#     return 'auto' if isAutoReload else None
 
 
 @xvm.export('sight.aLeftTime', deterministic=False)
@@ -408,3 +406,12 @@ def sight_aReloadTime():
 def sight_isIncreasedReload():
     return '#FF0000' if increasedReload else None
 
+
+@xvm.export('sight.isPreparingSalvo', deterministic=False)
+def sight_preparingSalvo():
+    return 'prepare' if isPreparingSalvo else None
+
+
+@xvm.export('sight.isGunBlocked', deterministic=False)
+def sight_isGunBlocked():
+    return 'blocked' if isGunBlocked else None
