@@ -1,21 +1,27 @@
-import BigWorld
 import math
+
+import BigWorld
+import gui.Scaleform.daapi.view.battle.shared.crosshair.plugins as plug
+from AvatarInputHandler.gun_marker_ctrl import _CrosshairShotResults, _SHOT_RESULT
 from Vehicle import Vehicle
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
-from AvatarInputHandler.gun_marker_ctrl import _CrosshairShotResults, _SHOT_RESULT
-import gui.Scaleform.daapi.view.battle.shared.crosshair.plugins as plug
 
-from xfw.events import registerEvent, overrideMethod, overrideClassMethod
-from xvm_main.python.logger import *
-import xvm_main.python.config as config
-from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
+import xvm_main.python.config as config
+from xfw.events import registerEvent, overrideClassMethod
+from xfw_actionscript.python import *
+from xvm_main.python.logger import *
 
+NOT_PIERCED = 'not_pierced'
+LITTLE_PIERCED = 'little_pierced'
+GREAT_PIERCED = 'great_pierced'
+NOT_TARGET = 'not_target'
 
-COLOR_PIERCING_CHANCE = {'not_pierced':    '#E82929',
-                         'little_pierced': '#E1C300',
-                         'great_pierced':  '#2ED12F',
-                         'not_target':     ''}
+PIERCING_CHANCE_KEY = (None, NOT_PIERCED, LITTLE_PIERCED, GREAT_PIERCED)
+COLOR_PIERCING_CHANCE = {NOT_PIERCED:    '#E82929',
+                         LITTLE_PIERCED: '#E1C300',
+                         GREAT_PIERCED:  '#2ED12F',
+                         NOT_TARGET:     ''}
 
 piercingActual = None
 armorActual = None
@@ -38,7 +44,6 @@ def onGunMarkerStateChanged(self, markerType, position, direction, collision):
 def _CrosshairShotResults_getShotResult(base, cls, hitPoint, collision, direction, excludeTeam=0):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, piercingChance
-        keyColor = [None, 'not_pierced', 'little_pierced', 'great_pierced']
         old_piercingActual = piercingActual
         old_armorActual = armorActual
         old_hitAngle = hitAngle
@@ -47,16 +52,24 @@ def _CrosshairShotResults_getShotResult(base, cls, hitPoint, collision, directio
         piercingChance = None
         hitAngle = None
         normHitAngle = None
-        shotResult = keyColor[0]
+        shotResult = PIERCING_CHANCE_KEY[_SHOT_RESULT.UNDEFINED]
         if collision is None:
+            if (old_armorActual != armorActual) or (old_piercingActual != piercingActual) or (old_hitAngle != hitAngle):
+                as_event('ON_CALC_ARMOR')
             return _SHOT_RESULT.UNDEFINED
         entity = collision.entity
         if entity.__class__.__name__ not in ('Vehicle', 'DestructibleEntity'):
+            if (old_armorActual != armorActual) or (old_piercingActual != piercingActual) or (old_hitAngle != hitAngle):
+                as_event('ON_CALC_ARMOR')
             return _SHOT_RESULT.UNDEFINED
         if entity.health <= 0 or entity.publicInfo['team'] == excludeTeam:
+            if (old_armorActual != armorActual) or (old_piercingActual != piercingActual) or (old_hitAngle != hitAngle):
+                as_event('ON_CALC_ARMOR')
             return _SHOT_RESULT.UNDEFINED
         player = BigWorld.player()
         if player is None:
+            if (old_armorActual != armorActual) or (old_piercingActual != piercingActual) or (old_hitAngle != hitAngle):
+                as_event('ON_CALC_ARMOR')
             return _SHOT_RESULT.UNDEFINED
         vDesc = player.getVehicleDescriptor()
         shell = vDesc.shot.shell
@@ -74,6 +87,8 @@ def _CrosshairShotResults_getShotResult(base, cls, hitPoint, collision, directio
         ignoredMaterials = set()
         collisionsDetails = cls._getAllCollisionDetails(hitPoint, direction, entity)
         if collisionsDetails is None:
+            if (old_armorActual != armorActual) or (old_piercingActual != piercingActual) or (old_hitAngle != hitAngle):
+                as_event('ON_CALC_ARMOR')
             return _SHOT_RESULT.UNDEFINED
         for cDetails in collisionsDetails:
             if isJet:
@@ -128,7 +143,7 @@ def _CrosshairShotResults_getShotResult(base, cls, hitPoint, collision, directio
                 mInfo = cDetails.matInfo
                 armor = mInfo.armor if mInfo is not None else 0.0
                 jetStartDist = cDetails.dist + armor * 0.001
-        shotResult = keyColor[result]
+        shotResult = PIERCING_CHANCE_KEY[result]
         if (old_armorActual != armorActual) or (old_piercingActual != piercingActual) or (old_hitAngle != hitAngle):
             as_event('ON_CALC_ARMOR')
         return result
@@ -187,7 +202,12 @@ def sight_piercingActual():
 
 @xvm.export('sight.c_piercingChance', deterministic=False)
 def sight_c_piercingChance():
-    return colorPiercingChance.get(shotResult, colorPiercingChance.get('not_target', None))
+    return colorPiercingChance.get(shotResult, colorPiercingChance.get(NOT_TARGET, None))
+
+
+@xvm.export('sight.piercingChanceKey', deterministic=False)
+def sight_piercingChanceKey():
+    return shotResult if shotResult is not None else NOT_TARGET
 
 
 @xvm.export('sight.piercingChance', deterministic=False)
