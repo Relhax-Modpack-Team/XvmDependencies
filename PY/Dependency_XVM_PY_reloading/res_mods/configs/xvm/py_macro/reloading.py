@@ -254,9 +254,11 @@ def as_startChargingS(self, timeLeft, totalTime):
 
 @registerEvent(DualGunPanelMeta, 'as_cancelChargeS')
 def as_cancelChargeS(self):
-    global reloadShotTimerCallbackID, isPreparingSalvo
+    global reloadShotTimerCallbackID, isPreparingSalvo, leftTimeShot
     isPreparingSalvo = False
+    leftTimeShot = 0.0
     reloadShotTimerCallbackID = resetCallback(reloadShotTimerCallbackID)
+    as_event('ON_RELOAD')
 
 
 @registerEvent(DualGunPanelMeta, 'as_setCooldownS')
