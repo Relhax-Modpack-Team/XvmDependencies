@@ -1,0 +1,54 @@
+<patchs>
+
+<patch>
+  <type>json</type>
+  <mode>arrayAdd</mode>
+  <patchPath>app</patchPath>
+  <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
+  <path>$.widgets.login</path>
+  <search></search>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLogin.xc[quote][colon][quote]LF_OM_Logo[quote][rbracket][index=0]</replace>
+</patch>
+
+<patch>
+  <type>json</type>
+  <mode>arrayAdd</mode>
+  <patchPath>app</patchPath>
+  <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
+  <path>$.widgets.login</path>
+  <search></search>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLogin.xc[quote][colon][quote]LF_Relhax_Logo[quote][rbracket][index=0]</replace>
+</patch>
+
+<patch>
+  <type>json</type>
+  <mode>arrayAdd</mode>
+  <patchPath>app</patchPath>
+  <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
+  <path>$.widgets.login</path>
+  <search></search>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLogin.xc[quote][colon][quote]LF_Relhax_Modpack[quote][rbracket][index=0]</replace>
+</patch>
+
+<patch>
+  <type>json</type>
+  <mode>arrayAdd</mode>
+  <patchPath>app</patchPath>
+  <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
+  <path>$.widgets.login</path>
+  <search></search>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLogin.xc[quote][colon][quote]LF_Credits_Devs[quote][rbracket][index=0]</replace>
+</patch>
+
+<patch>
+  <type>json</type>
+  <mode>arrayAdd</mode>
+  <patchPath>app</patchPath>
+  <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
+  <path>$.widgets.login</path>
+  <search></search>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLogin.xc[quote][colon][quote]LF_Credits_Translators[quote][rbracket][index=0]</replace>
+</patch>
+
+  
+</patchs>
