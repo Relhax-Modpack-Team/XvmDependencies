@@ -123,7 +123,6 @@
     "france-F36_AMX_AC_Mle1948_IGR": "<b><font size='15' color='#4CFF00'> 50/13 <font size='12' color='#4CFF00'> km/h </font></b>",
     "france-F37_AMX50_Foch": "<b><font size='15' color='#4CFF00'> 50/13 <font size='12' color='#4CFF00'> km/h </font></b>",
     "france-F38_Bat_Chatillon155_58": "<b><font size='15' color='#4CFF00'> 62/14 <font size='12' color='#4CFF00'> km/h </font></b>",
-    "france-F42_AMR_35": "<b><font size='15' color='#4CFF00'> 55/20 <font size='12' color='#4CFF00'> km/h </font></b>",
     "france-F44_Somua_S35": "<b><font size='15' color='#4CFF00'> 45/12 <font size='12' color='#4CFF00'> km/h </font></b>",
     "france-F49_RenaultR35": "<b><font size='15' color='#4CFF00'> 23/12 <font size='12' color='#4CFF00'> km/h </font></b>",
     "france-F50_FCM36_20t": "<b><font size='15' color='#4CFF00'> 24/12 <font size='12' color='#4CFF00'> km/h </font></b>",

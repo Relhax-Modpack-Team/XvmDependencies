@@ -123,7 +123,6 @@
     "france-F36_AMX_AC_Mle1948_IGR": "<b><font color='#6F2FA6'> 1948 </font></b>",
     "france-F37_AMX50_Foch": "<b><font color='#FFD800'> 1949 </font></b>",
     "france-F38_Bat_Chatillon155_58": "<b><font color='#6F2FA6'> 1957 </font></b>",
-    "france-F42_AMR_35": "<b><font color='#FFD800'> 1949 </font></b>",
     "france-F44_Somua_S35": "<b><font color='#FFD800'> 1934 </font></b>",
     "france-F49_RenaultR35": "<b><font color='#FFD800'> 1934 </font></b>",
     "france-F50_FCM36_20t": "<b><font color='#FFD800'> 1935 </font></b>",
