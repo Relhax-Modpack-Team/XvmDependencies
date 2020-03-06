@@ -123,7 +123,6 @@
     "france-F36_AMX_AC_Mle1948_IGR":"<font>150/55/40</font>",
     "france-F37_AMX50_Foch":"<font>150/55/40 </font>",
     "france-F38_Bat_Chatillon155_58":"<font>16/16/12</font>",
-    "france-F42_AMR_35":"<font>15/10/10</font>",
     "france-F44_Somua_S35":"<font>47/40/35</font>",
     "france-F49_RenaultR35":"<font>40/40/32</font>",
     "france-F50_FCM36_20t":"<font>40/20/20</font>",
