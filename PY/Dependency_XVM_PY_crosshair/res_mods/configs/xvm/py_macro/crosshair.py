@@ -1,13 +1,15 @@
 import GUI
 from Avatar import PlayerAvatar
+from AvatarInputHandler import AvatarInputHandler
 from AvatarInputHandler.AimingSystems import shootInSkyPoint
 from AvatarInputHandler.cameras import getWorldRayAndPoint
 from BigWorld import callback, cancelCallback
 from ProjectileMover import collideDynamicAndStatic
 from Vehicle import Vehicle
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
+from aih_constants import CTRL_MODE_NAME
 
 import xvm_battle.python.battle as battle
+import xvm_main.python.config as config
 from xfw.events import registerEvent
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
@@ -15,6 +17,12 @@ from xvm_main.python.logger import *
 distance = None
 ownVehicle = None
 getDistanceID = None
+visible = True
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 
 def getDistance():
@@ -41,17 +49,27 @@ def reset():
     distance = None
 
 
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global visible
+    newVisible = eMode in DISPLAY_IN_MODES
+    if newVisible != visible:
+        visible = newVisible
+        as_event('ON_CROSSHAIR')
+
+
 @registerEvent(Vehicle, 'onEnterWorld')
 def onEnterWorld(self, prereqs):
-    global ownVehicle, getDistanceID
-    if self.isPlayerVehicle and self.isAlive() and battle.isBattleTypeSupported:
+    global ownVehicle, getDistanceID, visible
+    if self.isPlayerVehicle and config.get('sight/enabled', True) and self.isAlive() and battle.isBattleTypeSupported:
         ownVehicle = self
+        visible = True
         getDistanceID = callback(0.1, getDistance)
 
 
-@registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
-def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    if not vInfoVO.isAlive() and ownVehicle is not None and (ownVehicle.id == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
+@registerEvent(PlayerAvatar, 'updateVehicleHealth')
+def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
+    if not (health > 0 and isCrewActive) and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         reset()
         as_event('ON_CROSSHAIR')
 
@@ -63,4 +81,4 @@ def PlayerAvatar__destroyGUI(self):
 
 @xvm.export('sight.distCrosshair', deterministic=False)
 def sight_distCrosshair():
-    return distance
+    return distance if visible else None
