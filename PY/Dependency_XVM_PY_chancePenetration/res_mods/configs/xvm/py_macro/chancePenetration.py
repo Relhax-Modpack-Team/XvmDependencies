@@ -2,9 +2,12 @@ import math
 
 import BigWorld
 import gui.Scaleform.daapi.view.battle.shared.crosshair.plugins as plug
+from Avatar import PlayerAvatar
 from AvatarInputHandler.gun_marker_ctrl import _CrosshairShotResults, _SHOT_RESULT
 from Vehicle import Vehicle
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
+from AvatarInputHandler import AvatarInputHandler
+from aih_constants import CTRL_MODE_NAME
 
 import xvm_battle.python.battle as battle
 import xvm_main.python.config as config
@@ -16,6 +19,11 @@ NOT_PIERCED = 'not_pierced'
 LITTLE_PIERCED = 'little_pierced'
 GREAT_PIERCED = 'great_pierced'
 NOT_TARGET = 'not_target'
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 PIERCING_CHANCE_KEY = (None, NOT_PIERCED, LITTLE_PIERCED, GREAT_PIERCED)
 COLOR_PIERCING_CHANCE = {NOT_PIERCED:    '#E82929',
@@ -31,6 +39,16 @@ hitAngle = None
 normHitAngle = None
 colorPiercingChance = COLOR_PIERCING_CHANCE
 playerVehicleID = None
+visible = True
+
+
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global visible
+    newVisible = eMode in DISPLAY_IN_MODES
+    if newVisible != visible:
+        visible = newVisible
+        as_event('ON_CALC_ARMOR')
 
 
 @registerEvent(plug.ShotResultIndicatorPlugin, '_ShotResultIndicatorPlugin__onGunMarkerStateChanged')
@@ -153,7 +171,7 @@ def _CrosshairShotResults_getShotResult(base, cls, hitPoint, collision, directio
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, colorPiercingChance, playerVehicleID, piercingChance
+    global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, colorPiercingChance, playerVehicleID, piercingChance, visible
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         piercingActual = None
         armorActual = None
@@ -161,16 +179,16 @@ def Vehicle_onEnterWorld(self, prereqs):
         shotResult = None
         hitAngle = None
         normHitAngle = None
-        colorPiercingChance = config.get(
-            'sight/c_piercingChance', COLOR_PIERCING_CHANCE)
+        visible = True
+        colorPiercingChance = config.get('sight/c_piercingChance', COLOR_PIERCING_CHANCE)
         playerVehicleID = self.id
         as_event('ON_CALC_ARMOR')
 
 
-@registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
-def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, colorPiercingChance, piercingChance
-    if (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
+@registerEvent(PlayerAvatar, 'updateVehicleHealth')
+def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
+    if not (health > 0 and isCrewActive) and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, colorPiercingChance, piercingChance
         piercingActual = None
         armorActual = None
         piercingChance = None
@@ -180,24 +198,38 @@ def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
         as_event('ON_CALC_ARMOR')
 
 
+# @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
+# def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
+#     global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, colorPiercingChance, piercingChance
+#     if (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
+#         piercingActual = None
+#         armorActual = None
+#         piercingChance = None
+#         shotResult = None
+#         hitAngle = None
+#         normHitAngle = None
+#         as_event('ON_CALC_ARMOR')
+
+
 @xvm.export('sight.piercingActual', deterministic=False)
 def sight_piercingActual():
-    return piercingActual
+    return piercingActual if visible else None
 
 
 @xvm.export('sight.hitAngle', deterministic=False)
 def sight_hitAngle():
-    return math.degrees(math.acos(hitAngle)) if hitAngle is not None else None
+    return math.degrees(math.acos(hitAngle)) if hitAngle is not None and visible else None
 
 
 @xvm.export('sight.normHitAngle', deterministic=False)
 def sight_normHitAngel():
-    return normHitAngle if (normHitAngle is None) or (normHitAngle < 0) else math.degrees(math.acos(normHitAngle))
+    if visible:
+        return normHitAngle if (normHitAngle is None) or (normHitAngle < 0) else math.degrees(math.acos(normHitAngle))
 
 
 @xvm.export('sight.armorActual', deterministic=False)
 def sight_piercingActual():
-    return armorActual
+    return armorActual if visible else None
 
 
 @xvm.export('sight.c_piercingChance', deterministic=False)
@@ -207,12 +239,15 @@ def sight_c_piercingChance():
 
 @xvm.export('sight.piercingChanceKey', deterministic=False)
 def sight_piercingChanceKey():
-    return shotResult if shotResult is not None else NOT_TARGET
+    if visible:
+        return shotResult if shotResult is not None else NOT_TARGET
 
 
 @xvm.export('sight.piercingChance', deterministic=False)
 def sight_piercingChance(norm=None):
     global piercingChance
+    if not visible:
+        return None
     if piercingChance is not None:
         piercingChance = (piercingChance * 100 if norm is None else piercingChance * norm)
     return piercingChance

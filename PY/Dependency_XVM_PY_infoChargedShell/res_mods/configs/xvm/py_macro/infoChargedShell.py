@@ -1,31 +1,39 @@
 import BigWorld
 import ResMgr
 import nations
-from Vehicle import Vehicle
 from Avatar import PlayerAvatar
-from items import _xml
+from Vehicle import Vehicle
 from constants import ITEM_DEFS_PATH
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
-from gui.battle_control.battle_constants import SHELL_SET_RESULT
 from gui.Scaleform.daapi.view.battle.shared.consumables_panel import ConsumablesPanel
+from gui.battle_control.battle_constants import SHELL_SET_RESULT
+from helpers import dependency
+from items import _xml, vehicles
+from skeletons.gui.battle_session import IBattleSessionProvider
+from AvatarInputHandler import AvatarInputHandler
+from aih_constants import CTRL_MODE_NAME
 
-from xfw.events import registerEvent, overrideMethod
-from xvm_main.python.logger import *
-import xvm_main.python.config as config
-from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
+import xvm_main.python.config as config
+from xfw.events import registerEvent
+from xfw_actionscript.python import *
+from xvm_main.python.logger import *
 
-
-SHELL_TYPES = {'armor_piercing':    '{{l10n:armor_piercing}}',
-               'high_explosive':    '{{l10n:high_explosive}}',
+SHELL_TYPES = {'armor_piercing': '{{l10n:armor_piercing}}',
+               'high_explosive': '{{l10n:high_explosive}}',
                'armor_piercing_cr': '{{l10n:armor_piercing_cr}}',
                'armor_piercing_he': '{{l10n:armor_piercing_he}}',
-               'hollow_charge':     '{{l10n:hollow_charge}}'}
+               'hollow_charge': '{{l10n:hollow_charge}}'}
 
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 gold_shells = {}
 xmlPath = ''
-shotsDescr = None
+ownVehicle = None
 shellType = None
 shellSpeed = None
 goldShell = None
@@ -36,7 +44,7 @@ caliber = None
 playerVehicleID = None
 isLastShot = False
 quantityShells = {}
-
+visible = True
 
 for nation in nations.NAMES:
     xmlPath = '%s%s%s%s' % (ITEM_DEFS_PATH, 'vehicles/', nation, '/components/shells.xml')
@@ -47,10 +55,10 @@ ResMgr.purge(xmlPath, True)
 
 
 def reset(isDead=False):
-    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, shotsDescr, quantityShells
+    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, ownVehicle, quantityShells
     if isDead:
         shellType = None
-        shotsDescr = None
+        ownVehicle = None
         quantityShells = {}
     else:
         shellType = config.get('sight/shellType/not_shell', '')
@@ -63,107 +71,117 @@ def reset(isDead=False):
     as_event('ON_AMMO_CHANGED')
 
 
+def updateCurrentShell(intCD, ammoCtrl):
+    global shellType, explosionRadius, damage, piercingPower, shellSpeed, goldShell, ownVehicle, caliber, isLastShot
+    shotDescr = vehicles.getItemByCompactDescr(intCD)
+    shellType = config.get('sight/shellType', SHELL_TYPES).get(shotDescr.kind.lower(), None)
+    explosionRadius = shotDescr.type.explosionRadius if hasattr(shotDescr.type, 'explosionRadius') else None
+    damage = shotDescr.damage[0]
+    gunSetting = ammoCtrl.getGunSettings()
+    piercingPower = gunSetting.getPiercingPower(intCD)
+    caliber = shotDescr.caliber
+    goldShell = 'gold' if shotDescr.id[1] in gold_shells[nations.NAMES[shotDescr.id[0]]] else None
+    if ownVehicle is None:
+        ownVehicle = BigWorld.entities.get(BigWorld.player().playerVehicleID, None)
+    shellSpeed = int(ownVehicle.typeDescriptor.shot.speed * 1.25) if ownVehicle is not None else None
+
+
+def shellsUpdatedOrAdd(intCD, quantity):
+    global quantityShells, isLastShot
+    sessionProvider = dependency.instance(IBattleSessionProvider)
+    quantityShells[intCD] = quantity
+    quantity = sum(quantityShells.itervalues())
+    isLastShot = quantity <= 1
+    ammoCtrl = sessionProvider.shared.ammo
+    CurrentShellCD = ammoCtrl.getCurrentShellCD()
+    if CurrentShellCD is None and ammoCtrl._order:
+        CurrentShellCD = ammoCtrl._order[0]
+    if isLastShot:
+        reset()
+    elif CurrentShellCD == intCD:
+        updateCurrentShell(intCD, ammoCtrl)
+    as_event('ON_AMMO_CHANGED')
+
+
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global visible
+    newVisible = eMode in DISPLAY_IN_MODES
+    if newVisible != visible:
+        visible = newVisible
+        as_event('ON_AMMO_CHANGED')
+
+
 @registerEvent(ConsumablesPanel, '_ConsumablesPanel__onShellsAdded')
 def infoChargedShell__onShellsAdded(self, intCD, descriptor, quantity, _, gunSettings):
-    global quantityShells
-    if battle.isBattleTypeSupported:
-        quantityShells[intCD] = quantity
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        shellsUpdatedOrAdd(intCD, quantity)
 
 
 @registerEvent(ConsumablesPanel, '_ConsumablesPanel__onShellsUpdated')
 def infoChargedShell__onShellsUpdated(self, intCD, quantity, *args):
-    global quantityShells
-    if battle.isBattleTypeSupported:
-        quantityShells[intCD] = quantity
-        if isLastShot or quantity == 0:
-            reset()
+    global quantityShells, isLastShot
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        shellsUpdatedOrAdd(intCD, quantity)
 
 
 @registerEvent(ConsumablesPanel, '_ConsumablesPanel__onCurrentShellChanged')
 def infoChargedShell__onCurrentShellChanged(self, intCD):
-    global isLastShot, shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, shotsDescr
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
-        ctrl = BigWorld.player().guiSessionProvider.shared.ammo
-        shells = ctrl.getOrderedShellsLayout()
-        # quantity = sum(shell[2] for shell in shells)
-        quantity = sum(quantityShells.itervalues())
-        isLastShot = quantity <= 1
-        if quantity == 0:
+        if isLastShot:
             return reset()
         else:
-            if shotsDescr is None:
-                ownVehicle = BigWorld.entities.get(BigWorld.player().playerVehicleID, None)
-                shotsDescr = ownVehicle.typeDescriptor.gun.shots
-            for shell in shells:
-                if shell[0] == intCD:
-                    shellType = config.get('sight/shellType', SHELL_TYPES).get(shell[1].kind.lower(), None)
-                    id = shell[1].id
-                    # log('id = %s' % id[1])
-                    for shot in shotsDescr:
-                        _shell = shot.shell
-                        if _shell.id == id:
-                            explosionRadius = _shell.type.explosionRadius if hasattr(_shell.type, 'explosionRadius') else None
-                            damage = _shell.damage[0]
-                            piercingPower = shot.piercingPower[0]
-                            shellSpeed = int(shot.speed * 1.25)
-                            # log('shellSpeed = %s' % shellSpeed)
-                            # log('piercingPower = %s' % piercingPower)
-                            caliber = _shell.caliber
-                            break
-                    goldShell = 'gold' if id[1] in gold_shells[nations.NAMES[id[0]]] else None
-                    break
+            updateCurrentShell(intCD, self.sessionProvider.shared.ammo)
         as_event('ON_AMMO_CHANGED')
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global playerVehicleID #, shotsDescr
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
-        playerVehicleID = self.id
-        # shotsDescr = self.typeDescriptor.gun.shots
-        # reset(True)
+        global visible
+        visible = True
 
 
-@registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
-def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    if (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
+@registerEvent(PlayerAvatar, 'updateVehicleHealth')
+def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
+    if not (health > 0 and isCrewActive) and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         reset(True)
-
 
 @registerEvent(PlayerAvatar, '_PlayerAvatar__destroyGUI')
 def PlayerAvatar__destroyGUI(self):
     reset(True)
 
+
 @xvm.export('sight.shellType', deterministic=False)
 def sight_shellType():
-    return shellType
+    return shellType if visible else None
 
 
 @xvm.export('sight.shellSpeed', deterministic=False)
 def sight_shellSpeed():
-    return shellSpeed
+    return shellSpeed if visible else None
 
 
 @xvm.export('sight.goldShell', deterministic=False)
 def sight_goldShell():
-    return goldShell
+    return goldShell if visible else None
 
 
 @xvm.export('sight.piercingShell', deterministic=False)
 def sight_piercingPower():
-    return piercingPower
+    return piercingPower if visible else None
 
 
 @xvm.export('sight.explosionRadiusShell', deterministic=False)
 def sight_explosionRadius():
-    return explosionRadius
+    return explosionRadius if visible else None
 
 
 @xvm.export('sight.damageShell', deterministic=False)
 def sight_damage():
-    return damage
+    return damage if visible else None
 
 
 @xvm.export('sight.caliberShell', deterministic=False)
 def sight_caliber():
-    return caliber
+    return caliber if visible else None
