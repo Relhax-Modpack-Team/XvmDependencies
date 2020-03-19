@@ -1,13 +1,12 @@
 import BigWorld
-from account_helpers.settings_core.options import InterfaceScaleSetting
-from Avatar import PlayerAvatar
-from AvatarInputHandler.AimingSystems.ArcadeAimingSystem import ArcadeAimingSystem
-from AvatarInputHandler.AimingSystems.SniperAimingSystem import SniperAimingSystem
-from AvatarInputHandler.AimingSystems.StrategicAimingSystem import StrategicAimingSystem
 import gui.Scaleform.daapi.view.battle.shared.crosshair.plugins as plug
+from Avatar import PlayerAvatar
+from AvatarInputHandler import AvatarInputHandler
+from account_helpers.settings_core.options import InterfaceScaleSetting
+from aih_constants import CTRL_MODE_NAME
 
-from xfw.events import registerEvent, overrideMethod
 import xvm_battle.python.battle as battle
+from xfw.events import registerEvent, overrideMethod
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
 
@@ -16,36 +15,38 @@ SNIPER_MODE = 'sn'
 STRATEGIC_MODE = 'str'
 SHIFT = 0.0775
 NETS_TYPES = {0: 'diagonal', 1: 'horizontal', 2: 'radial', 3: 'dotted'}
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 aimMode = ARCADE_MODE
 y = 0.0
 netType = {ARCADE_MODE: 0, SNIPER_MODE: 0}
 
-@registerEvent(ArcadeAimingSystem, 'enable')
-def ArcadeAimingSystem_enable(self, targetPos, turretYaw=None, gunPitch=None):
+
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global y, aimMode
     if battle.isBattleTypeSupported:
-        global y, aimMode
-        y = - BigWorld.screenHeight() * SHIFT
-        aimMode = ARCADE_MODE
-        as_event('ON_AIM_MODE')
-
-
-@registerEvent(SniperAimingSystem, 'enable')
-def SniperAimingSystem_enable(self, targetPos, playerGunMatFunction):
-    if battle.isBattleTypeSupported:
-        global y, aimMode
-        y = 0.0
-        aimMode = SNIPER_MODE
-        as_event('ON_AIM_MODE')
-
-
-@registerEvent(StrategicAimingSystem, 'enable')
-def StrategicAimingSystem_enable(self, targetPos):
-    if battle.isBattleTypeSupported:
-        global y, aimMode
-        y = 0.0
-        aimMode = STRATEGIC_MODE
-        as_event('ON_AIM_MODE')
+        oldAimMMode = aimMode
+        if self._AvatarInputHandler__isArenaStarted:
+            if eMode == CTRL_MODE_NAME.ARCADE:
+                y = - BigWorld.screenHeight() * SHIFT
+                aimMode = ARCADE_MODE
+            elif eMode in [CTRL_MODE_NAME.SNIPER, CTRL_MODE_NAME.DUAL_GUN]:
+                y = 0.0
+                aimMode = SNIPER_MODE
+            elif eMode in [CTRL_MODE_NAME.ARTY, CTRL_MODE_NAME.STRATEGIC]:
+                y = 0.0
+                aimMode = STRATEGIC_MODE
+            else:
+                aimMode = None
+        else:
+            aimMode = ARCADE_MODE
+        if oldAimMMode != aimMode:
+            as_event('ON_AIM_MODE')
 
 
 @registerEvent(InterfaceScaleSetting, 'setSystemValue')
@@ -84,6 +85,8 @@ def aim_mode(arc=ARCADE_MODE, sn=SNIPER_MODE, strat=STRATEGIC_MODE):
         return sn
     elif aimMode == STRATEGIC_MODE:
         return strat
+    else:
+        return None
 
 
 @xvm.export('aim.y', deterministic=False)
