@@ -3,16 +3,22 @@ from Avatar import PlayerAvatar
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
 from gui.Scaleform.daapi.view.battle.shared.crosshair.container import CrosshairPanelContainer
 from gui.Scaleform.daapi.view.battle.shared.crosshair.plugins import TargetDistancePlugin
+from AvatarInputHandler import AvatarInputHandler
+from aih_constants import CTRL_MODE_NAME
 
-from xfw.events import registerEvent, overrideMethod
+from xfw.events import registerEvent
 from xvm_main.python.logger import *
 import xvm_main.python.config as config
 from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
 
 
-
 VEHICLE_CLASSES = {'mediumTank': 'MT', 'lightTank': 'LT', 'heavyTank': 'HT', 'AT-SPG': 'TD', 'SPG': 'SPG'}
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 targetDistance = None
 targetName = None
@@ -26,12 +32,23 @@ playerVehicleID = None
 f_delayHideTarget = None
 isAlly = None
 targetAlive = False
+visible = True
+
+
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global visible
+    newVisible = eMode in DISPLAY_IN_MODES
+    if newVisible != visible:
+        visible = newVisible
+        as_event('ON_TARGET')
 
 
 @registerEvent(TargetDistancePlugin, '_TargetDistancePlugin__updateDistance', True)
 def TargetDistancePlugin__updateDistance(self, target):
-    global targetAlive
-    targetAlive = target.isAlive()
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        global targetAlive
+        targetAlive = target.isAlive()
 
 
 @registerEvent(CrosshairPanelContainer, 'setDistance')
@@ -109,62 +126,72 @@ def PlayerAvatar_targetFocus(self, entity):
 
 @registerEvent(PlayerAvatar, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global playerVehicleID, isAlly
+    global playerVehicleID, isAlly, visible
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         playerVehicleID = self.playerVehicleID
         isAlly = None
+        visible = True
         targetClear()
 
 
-@registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
-def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    global isAlly
-    if config.get('sight/enabled', True) and (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
+@registerEvent(PlayerAvatar, 'updateVehicleHealth')
+def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
+    if not (health > 0 and isCrewActive) and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        global isAlly
         targetClear()
         isAlly = None
         as_event('ON_TARGET')
 
+#
+# @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
+# def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
+#     global isAlly
+#     if config.get('sight/enabled', True) and (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
+#         targetClear()
+#         isAlly = None
+#         as_event('ON_TARGET')
+
 
 @xvm.export('sight.nameTarget', deterministic=False)
 def sight_targetName():
-    return targetName
+    return targetName if visible else None
 
 
 @xvm.export('sight.vehicleTarget', deterministic=False)
 def sight_targetVehicle():
-    return targetVehicle
+    return targetVehicle if visible else None
 
 
 @xvm.export('sight.vehNameTarget', deterministic=False)
 def sight_vehNameTarget():
-    return targetVehicleName
+    return targetVehicleName if visible else None
 
 
 @xvm.export('sight.vtypeTarget', deterministic=False)
 def sight_targetVType():
-    return targetVType
+    return targetVType if visible else None
 
 
 @xvm.export('sight.c_vtypeTarget', deterministic=False)
 def sight_targetColorsVType():
-    return targetColorsVType
+    return targetColorsVType if visible else None
 
 
 @xvm.export('sight.reloadTarget', deterministic=False)
 def sight_targetReload():
-    return targetReload
+    return targetReload if visible else None
 
 
 @xvm.export('sight.visionRadiusTarget', deterministic=False)
 def sight_targetVisionRadius():
-    return targetVisionRadius
+    return targetVisionRadius if visible else None
 
 
 @xvm.export('sight.distanceTarget', deterministic=False)
 def sight_targetDistance():
-    return targetDistance
+    return targetDistance if visible else None
 
 
 @xvm.export('sight.allyTarget', deterministic=False)
 def sight_targetAlly():
-    return isAlly
+    return isAlly if visible else None
