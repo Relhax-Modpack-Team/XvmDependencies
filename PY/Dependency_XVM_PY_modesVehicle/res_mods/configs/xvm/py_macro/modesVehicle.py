@@ -1,5 +1,7 @@
 from Vehicle import Vehicle
 from AvatarInputHandler.commands.siege_mode_control import SiegeModeControl
+from AvatarInputHandler import AvatarInputHandler
+from aih_constants import CTRL_MODE_NAME
 
 from xfw.events import registerEvent
 from xvm_main.python.logger import *
@@ -10,6 +12,11 @@ import xvm_battle.python.battle as battle
 NORMAL = 'normal'
 SPEED = 'speed'
 SIEGE = 'siege'
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 isWheeledTech = False
 speedMode = NORMAL
@@ -17,11 +24,21 @@ hasAutoSiegeMode = False
 hasSiegeMode = False
 siegeMode = NORMAL
 autoSiegeMode = NORMAL
+visible = True
+
+
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global visible
+    newVisible = eMode in DISPLAY_IN_MODES
+    if newVisible != visible:
+        visible = newVisible
+        as_event('ON_VEHICLE_MODE')
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global isWheeledTech, siegeMode, autoSiegeMode, hasAutoSiegeMode, hasSiegeMode, speedMode
+    global isWheeledTech, siegeMode, autoSiegeMode, hasAutoSiegeMode, hasSiegeMode, speedMode, visible
     if config.get('sight/enabled', True) and self.isPlayerVehicle and battle.isBattleTypeSupported:
         isWheeledTech = self.isWheeledTech
         hasAutoSiegeMode = self.typeDescriptor.hasAutoSiegeMode
@@ -29,6 +46,7 @@ def Vehicle_onEnterWorld(self, prereqs):
         speedMode = NORMAL
         siegeMode = NORMAL
         autoSiegeMode = NORMAL
+        visible = True
         as_event('ON_VEHICLE_MODE')
 
 
@@ -50,14 +68,14 @@ def SiegeModeControl_notifySiegeModeChanged(self, vehicle, newState, timeToNextM
 
 @xvm.export('mode.siege', deterministic=False)
 def sight_siegeMode():
-    return siegeMode if hasSiegeMode else None
+    return siegeMode if hasSiegeMode and visible else None
 
 
 @xvm.export('mode.autoSiege', deterministic=False)
 def sight_autoSiegeMode():
-    return autoSiegeMode if hasAutoSiegeMode else None
+    return autoSiegeMode if hasAutoSiegeMode and visible else None
 
 
 @xvm.export('mode.speed', deterministic=False)
 def sight_speedMode():
-    return speedMode if isWheeledTech else None
+    return speedMode if isWheeledTech and visible else None
