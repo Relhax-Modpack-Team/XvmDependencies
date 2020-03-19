@@ -1,17 +1,21 @@
 import BigWorld
-import Math
 from Avatar import PlayerAvatar
+from AvatarInputHandler import AvatarInputHandler
 from Vehicle import Vehicle
+from aih_constants import CTRL_MODE_NAME
 from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
 from vehicle_systems.tankStructure import TankPartIndexes
+import AvatarInputHandler.AimingSystems.magnetic_aim as aim
 from gui.battle_control import event_dispatcher
+import gui.Scaleform.daapi.view.battle.shared.markers2d.plugins as plug
+from AvatarInputHandler.control_modes import _GunControlMode
+import BattleReplay
 
-
-from xfw.events import registerEvent, overrideMethod
-from xvm_main.python.logger import *
 import xvm_main.python.config as config
+import xvm_battle.python.battle as battle
+from xfw.events import registerEvent, overrideMethod
 from xfw_actionscript.python import *
-
+from xvm_main.python.logger import *
 
 targetName = None
 targetVehicle = None
@@ -19,15 +23,20 @@ targetHealth = None
 targetID = None
 playerVehicleID = None
 marker = None
-isShowAutoAimMarker = False
+visible = True
+
+DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
+                    CTRL_MODE_NAME.ARTY,
+                    CTRL_MODE_NAME.DUAL_GUN,
+                    CTRL_MODE_NAME.SNIPER,
+                    CTRL_MODE_NAME.STRATEGIC]
 
 
 class Arrow(object):
 
     def __init__(self):
         try:
-            self.__model = BigWorld.Model(
-                '../mods/shared_resources/xvm/res/markers/Arrow/arrow.model')
+            self.__model = BigWorld.Model('../mods/shared_resources/xvm/res/markers/Arrow/arrow.model')
         except:
             self.__model = None
         self.__motor = None
@@ -102,16 +111,40 @@ class Cylinder(object):
                 BigWorld.addModel(self.__modelBig)
 
 
+def resetTarget():
+    global targetName, targetVehicle, targetHealth, targetID, marker
+    targetName = None
+    targetVehicle = None
+    targetHealth = None
+    targetID = None
+    if marker is not None:
+        marker.hideMarker()
+
+def setTarget(vehicleID):
+    global targetName, targetVehicle, targetHealth, targetID, marker
+    target = BigWorld.entity(vehicleID)
+    targetVehicle = target.typeDescriptor.type.shortUserString
+    targetName = target.publicInfo.name
+    targetHealth = target.health
+    targetID = target.id
+    if marker is not None:
+        marker.showMarker(target)
+
+@registerEvent(AvatarInputHandler, 'onControlModeChanged')
+def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
+    global visible
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        newVisible = eMode in DISPLAY_IN_MODES
+        if newVisible != visible:
+            visible = newVisible
+            as_event('ON_AUTO_AIM')
+
+
 @registerEvent(PlayerAvatar, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global targetName, targetVehicle, targetHealth, playerVehicleID, targetID, marker, isShowAutoAimMarker
-    if config.get('sight/enabled', True):
+    global targetName, targetVehicle, targetHealth, playerVehicleID, targetID, marker, visible
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         if config.get('sight/autoAim/enabled', False):
-            vehicle = BigWorld.entity(self.playerVehicleID)
-            value = config.get(
-                'sight/autoAim/showAutoAimMarker', 'wheels').lower()
-            isShowAutoAimMarker = vehicle.isWheeledTech if value not in [
-                'all', 'none'] else (value == 'all')
             markerType = config.get('sight/autoAim/markerType', '')
             if markerType.strip().lower() == 'cylinder':
                 marker = Cylinder()
@@ -125,69 +158,83 @@ def Vehicle_onEnterWorld(self, prereqs):
         targetVehicle = None
         targetHealth = None
         targetID = None
+        visible = True
         playerVehicleID = self.playerVehicleID
 
 
 @registerEvent(Vehicle, 'onHealthChanged')
 def onHealthChanged(self, newHealth, attackerID, attackReasonID):
     global targetHealth
-    if config.get('sight/enabled', True):
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         if targetID is not None and targetID == self.id:
             targetHealth = self.health
+            if not self.isAlive():
+                resetTarget()
             as_event('ON_AUTO_AIM')
 
 
-@registerEvent(PlayerAvatar, 'onLockTarget')
-def onLockTarget(self, state, playVoiceNotifications):
-    global targetName, targetVehicle, targetHealth, targetID, marker
-    if config.get('sight/enabled', True):
-        target = BigWorld.target()
-        if (state == 1) and target is not None:
-            targetVehicle = target.typeDescriptor.type.shortUserString
-            targetName = target.publicInfo.name
-            targetHealth = target.health
-            targetID = target.id
-            if isShowAutoAimMarker:
-                event_dispatcher.addAutoAimMarker(target)
-            else:
-                event_dispatcher.hideAutoAimMarker()
-            if marker is not None:
-                marker.showMarker(target)
-        else:
-            targetName = None
-            targetVehicle = None
-            targetHealth = None
-            targetID = None
-            if isShowAutoAimMarker:
-                event_dispatcher.hideAutoAimMarker()
-            if marker is not None:
-                marker.hideMarker()
+@registerEvent(plug.VehicleMarkerTargetPlugin, '_VehicleMarkerTargetPlugin__addAutoAimMarker')
+def VehicleMarkerTargetPlugin__addAutoAimMarker(self, event):
+    if self._vehicleID is not None:
+        setTarget(self._vehicleID)
         as_event('ON_AUTO_AIM')
 
 
-@registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
-def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-    global targetName, targetVehicle, targetHealth, targetID
-    if config.get('sight/enabled', True) and (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID):
-        targetName = None
-        targetVehicle = None
-        targetHealth = None
-        targetID = None
-        if marker is not None:
-            marker.hideMarker()
+@registerEvent(plug.VehicleMarkerTargetPlugin, '_addMarker')
+def _addMarker(self, vehicleID):
+    if BattleReplay.g_replayCtrl.isPlaying:
+        setTarget(vehicleID)
         as_event('ON_AUTO_AIM')
+
+
+@registerEvent(plug.VehicleMarkerTargetPlugin, '_hideVehicleMarker')
+def _hideVehicleMarker(self, vehicleID):
+    if vehicleID == targetID:
+        resetTarget()
+        as_event('ON_AUTO_AIM')
+
+
+#
+# @registerEvent(PlayerAvatar, 'onLockTarget')
+# def onLockTarget(self, state, playVoiceNotifications):
+#     global targetName, targetVehicle, targetHealth, targetID, marker
+#     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+#         log('PlayerAvatar state = %s' % state)
+#         # target = BigWorld.target()
+#         target = self.autoAimVehicle
+#         if target is not None:
+#             log('onLockTarget state = %s  target = %s' % (state, target.id))
+#         else:
+#             log('onLockTarget state = %s  target = %s' % (state, None))
+#         if (state == 1) and target is not None:
+#             targetVehicle = target.typeDescriptor.type.shortUserString
+#             targetName = target.publicInfo.name
+#             targetHealth = target.health
+#             targetID = target.id
+#             if marker is not None:
+#                 marker.showMarker(target)
+#         else:
+#             resetTarget()
+#         as_event('ON_AUTO_AIM')
+
+
+# @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
+# def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
+#     if config.get('sight/enabled', True) and (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID):
+#         resetTarget()
+#         as_event('ON_AUTO_AIM')
 
 
 @xvm.export('sight.autoAimName', deterministic=False)
 def sight_autoAimName():
-    return targetName
+    return targetName if visible else None
 
 
 @xvm.export('sight.autoAimVehicle', deterministic=False)
 def sight_autoAimVehicle():
-    return targetVehicle
+    return targetVehicle if visible else None
 
 
 @xvm.export('sight.autoAimHealth', deterministic=False)
 def sight_autoAimHealth():
-    return targetHealth
+    return targetHealth if visible else None
