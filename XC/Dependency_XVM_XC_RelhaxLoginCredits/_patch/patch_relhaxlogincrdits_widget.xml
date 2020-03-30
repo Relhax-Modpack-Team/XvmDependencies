@@ -7,7 +7,7 @@
   <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
   <path>$.widgets.login</path>
   <search></search>
-  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]LF_OM_Logo[quote][rbracket][index=0]</replace>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]OM_Logo[quote][rbracket][index=0]</replace>
 </patch>
 
 <patch>
@@ -17,7 +17,7 @@
   <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
   <path>$.widgets.login</path>
   <search></search>
-  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]LF_Relhax_Logo[quote][rbracket][index=0]</replace>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]Relhax_Logo[quote][rbracket][index=0]</replace>
 </patch>
 
 <patch>
@@ -27,7 +27,7 @@
   <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
   <path>$.widgets.login</path>
   <search></search>
-  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]LF_Relhax_Modpack[quote][rbracket][index=0]</replace>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]Relhax_Modpack[quote][rbracket][index=0]</replace>
 </patch>
 
 <patch>
@@ -37,7 +37,7 @@
   <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
   <path>$.widgets.login</path>
   <search></search>
-  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]LF_Credits_Devs[quote][rbracket][index=0]</replace>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]Credits_Devs[quote][rbracket][index=0]</replace>
 </patch>
 
 <patch>
@@ -47,7 +47,7 @@
   <file>\res_mods\configs\xvm\xvmConfigFolderName\widgets.xc</file>
   <path>$.widgets.login</path>
   <search></search>
-  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]LF_Credits_Translators[quote][rbracket][index=0]</replace>
+  <replace>[dollar][lbracket][quote]widgetsRelhaxLoginCredits.xc[quote][colon][quote]Credits_Translators[quote][rbracket][index=0]</replace>
 </patch>
 
   

@@ -16,7 +16,7 @@
     Silvers_            ru DrWeb7_1
     */
     
-    "LF_OM_Logo": {
+    "OM_Logo": {
         "enabled":              true,
         "layer":                "top",
         "type":                 "extrafield",
@@ -33,7 +33,7 @@
             }
         ]
     },
-    "LF_Relhax_Logo": {
+    "Relhax_Logo": {
         "enabled":              true,
         "layer":                "top",
         "type":                 "extrafield",
@@ -50,7 +50,7 @@
             }
         ]
     },
-    "LF_Relhax_Modpack": {
+    "Relhax_Modpack": {
         "enabled":              true,
         "layer":                "top",
         "type":                 "extrafield",
@@ -68,7 +68,7 @@
             }
         ]
     },
-    "LF_Credits_Devs": {
+    "Credits_Devs": {
         "enabled":              true,
         "layer":                "top",
         "type":                 "extrafield",
@@ -86,7 +86,7 @@
             }
         ]
     },
-    "LF_Credits_Translators": {
+    "Credits_Translators": {
         "enabled":              true,
         "layer":                "top",
         "type":                 "extrafield",
