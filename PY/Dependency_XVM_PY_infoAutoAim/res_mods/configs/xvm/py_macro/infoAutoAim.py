@@ -120,6 +120,7 @@ def resetTarget():
     if marker is not None:
         marker.hideMarker()
 
+
 def setTarget(vehicleID):
     global targetName, targetVehicle, targetHealth, targetID, marker
     target = BigWorld.entity(vehicleID)
@@ -129,6 +130,7 @@ def setTarget(vehicleID):
     targetID = target.id
     if marker is not None:
         marker.showMarker(target)
+
 
 @registerEvent(AvatarInputHandler, 'onControlModeChanged')
 def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
@@ -182,7 +184,7 @@ def VehicleMarkerTargetPlugin__addAutoAimMarker(self, event):
 
 @registerEvent(plug.VehicleMarkerTargetPlugin, '_addMarker')
 def _addMarker(self, vehicleID):
-    if BattleReplay.g_replayCtrl.isPlaying:
+    if BattleReplay.g_replayCtrl.isPlaying and vehicleID is not None:
         setTarget(vehicleID)
         as_event('ON_AUTO_AIM')
 
