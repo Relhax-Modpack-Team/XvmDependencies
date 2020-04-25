@@ -115,18 +115,40 @@ def alliesAliveRatingRatio():
     return x
 
 
-@xvm.export('TeamRatingRatio', deterministic=False)
-def TeamRatingRatio():
-    color = '#FFFFFF'
+@xvm.export('c_alliesAliveRatingRatio', deterministic=False)
+def c_alliesAliveRatingRatio():
     if enemies_wn8 != 0 and allies_wn8 != 0:
-        if allies_wn8 > enemies_wn8:
-            return '<font color="#00EE00">{} &gt; {}</font>'.format(int(allies_wn8), int(enemies_wn8))
-        elif allies_wn8 < enemies_wn8:
-            return '<font color="#EE0000">{} &lt; {}</font>'.format(int(allies_wn8), int(enemies_wn8))
+        if enemies_wn8 > allies_wn8:
+            x = float(50 - (1.0 - allies_wn8 / enemies_wn8) * 50)
+            if x > 89.5:
+                return '#D042F3'
+            elif x > 74.5:
+                return '#02C9B3'
+            elif x > 59.5:
+                return '#60FF00'
+            elif x > 39.5:
+                return '#F8F400'
+            elif x > 24.5:
+                return '#FE7903'
+            else:
+                return '#FE0E00'
         else:
-            return '<font color="00EE00">{} = {}</font>'.format(int(allies_wn8), int(enemies_wn8))
+            x = float(50 + (1.0 - enemies_wn8 / allies_wn8) * 50)
+            if x > 89.5:
+                return '#D042F3'
+            elif x > 74.5:
+                return '#02C9B3'
+            elif x > 59.5:
+                return '#60FF00'
+            elif x > 39.5:
+                return '#F8F400'
+            elif x > 24.5:
+                return '#FE7903'
+            else:
+                return '#FE0E00'
     else:
-        return '<font color="#FFFFFF">0</font>'
+        return '#FFFFFF'
+    return
 
 
 def setVehicleStats(vid, vehicle):
