@@ -44,7 +44,7 @@ def avg_damage():
 #####################################################################
 # handlers > hp_panel
 
-@xvm.export('thp_show', deterministic=True)
+@xvm.export('thp_show', deterministic=False)
 def thp_show():
     return hp_panel.thp_show()
 
