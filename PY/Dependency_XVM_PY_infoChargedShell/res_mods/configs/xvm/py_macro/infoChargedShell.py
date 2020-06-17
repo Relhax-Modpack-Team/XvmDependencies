@@ -33,7 +33,7 @@ DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
 
 gold_shells = {}
 xmlPath = ''
-ownVehicle = None
+gunName = None
 shellType = None
 shellSpeed = None
 goldShell = None
@@ -55,10 +55,10 @@ ResMgr.purge(xmlPath, True)
 
 
 def reset(isDead=False):
-    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, ownVehicle, quantityShells
+    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, quantityShells, gunName
     if isDead:
         shellType = None
-        ownVehicle = None
+        gunName = None
         quantityShells = {}
     else:
         shellType = config.get('sight/shellType/not_shell', '')
@@ -72,7 +72,7 @@ def reset(isDead=False):
 
 
 def updateCurrentShell(intCD, ammoCtrl):
-    global shellType, explosionRadius, damage, piercingPower, shellSpeed, goldShell, ownVehicle, caliber, isLastShot
+    global shellType, explosionRadius, damage, piercingPower, shellSpeed, goldShell, caliber, isLastShot, gunName
     shotDescr = vehicles.getItemByCompactDescr(intCD)
     shellType = config.get('sight/shellType', SHELL_TYPES).get(shotDescr.kind.lower(), None)
     explosionRadius = shotDescr.type.explosionRadius if hasattr(shotDescr.type, 'explosionRadius') else None
@@ -81,10 +81,11 @@ def updateCurrentShell(intCD, ammoCtrl):
     piercingPower = gunSetting.getPiercingPower(intCD)
     caliber = shotDescr.caliber
     goldShell = 'gold' if shotDescr.id[1] in gold_shells[nations.NAMES[shotDescr.id[0]]] else None
-    if ownVehicle is None:
-        ownVehicle = BigWorld.entities.get(BigWorld.player().playerVehicleID, None)
-    shellSpeed = int(ownVehicle.typeDescriptor.shot.speed * 1.25) if ownVehicle is not None else None
-
+#    if ownVehicle is None:
+#        ownVehicle = BigWorld.entities.get(BigWorld.player().playerVehicleID, None)
+#    shellSpeed = int(ownVehicle.typeDescriptor.shot.speed * 1.25) if ownVehicle is not None else None
+    xmlPath = ITEM_DEFS_PATH + '/vehicles/' + nations.NAMES[shotDescr.id[0]] + '/components/guns.xml'
+    shellSpeed = ResMgr.openSection(xmlPath + '/shared/' + gunName + '/shots/' + shotDescr.name).readInt('speed')
 
 def shellsUpdatedOrAdd(intCD, quantity):
     global quantityShells, isLastShot
@@ -137,8 +138,13 @@ def infoChargedShell__onCurrentShellChanged(self, intCD):
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
+    global visible, gunName
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
-        global visible
+        try:
+            if self.typeDescriptor is not None:
+                gunName = self.typeDescriptor.gun.name
+        except:
+            pass
         visible = True
 
 
