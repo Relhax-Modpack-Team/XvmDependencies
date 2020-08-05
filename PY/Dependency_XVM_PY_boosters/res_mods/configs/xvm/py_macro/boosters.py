@@ -1,23 +1,26 @@
-from helpers import time_utils
-from helpers.i18n import makeString as _ms
+# -*- coding: utf-8 -*-
+
 from Account import PlayerAccount
-from gui.shared.utils.requesters.ItemsRequester import REQ_CRITERIA
-from helpers import dependency
-from skeletons.gui.goodies import IGoodiesCache
-from gui.goodies.goodie_items import _BOOSTER_TYPE_NAMES as BTN
 from gui.Scaleform.daapi.view.lobby.hangar.Hangar import Hangar
 from gui.Scaleform.daapi.view.meta.LobbyHeaderMeta import LobbyHeaderMeta
 from gui.Scaleform.locale.MENU import MENU
+from gui.goodies.goodie_items import _BOOSTER_TYPE_NAMES as BTN
+from gui.shared.utils.requesters.ItemsRequester import REQ_CRITERIA
+from helpers import dependency
+from helpers import time_utils
+from helpers.i18n import makeString as _ms
+from skeletons.gui.goodies import IGoodiesCache
 
-from xvm_main.python.logger import *
 import xvm_main.python.config as config
-from xfw_actionscript.python import *
 from xfw.events import registerEvent, overrideMethod
-
+from xfw_actionscript.python import *
+from xvm_main.python.logger import *
 
 boostersName = dict.fromkeys(BTN.values())
 clanReservesName = dict.fromkeys(BTN.values())
 boosterEnabled = True
+unitH = ""
+unitM = ""
 
 autoReloadConfig = False
 isBattle = False
@@ -57,41 +60,19 @@ class Reserve(object):
 
 
 def readConfig():
-    global autoReloadConfig, boostersName, boosterEnabled
+    global autoReloadConfig, boostersName, boosterEnabled, unitH, unitM
     autoReloadConfig = config.get('autoReloadConfig')
     boosterEnabled = config.get('boosters/enabled', True)
     if boosterEnabled:
         for k in boostersName.iterkeys():
-            boostersName[k] = config.get(
-                'boosters/boostersName/{}'.format(k[8:]), None)
+            boostersName[k] = config.get('boosters/boostersName/{}'.format(k[8:]), None)
         for k in clanReservesName.iterkeys():
-            clanReservesName[k] = config.get(
-                'boosters/clanReservesName/{}'.format(k[8:]), None)
+            clanReservesName[k] = config.get('boosters/clanReservesName/{}'.format(k[8:]), None)
+    unitH = config.get('boosters/unit/hour', 'ч')
+    unitM = config.get('boosters/unit/minute', 'м')
 
 
 readConfig()
-
-
-@overrideMethod(LobbyHeaderMeta, 'as_setBoosterDataS')
-def as_setBoosterDataS(base, self, data):
-    #log('data = %s' % data)
-    if data['hasActiveBooster'] and boosterEnabled and config.get('boosters/hideActiveBooster', False):
-        data['boosterIcon'] = BOOSTER_ICON_EMPTY
-        data['boosterBg'] = BOOSTER_ICON_EMPTY
-        data['boosterText'] = ''
-    base(self, data)
-
-
-@registerEvent(PlayerAccount, 'onArenaCreated')
-def onArenaCreated(self):
-    global isBattle
-    isBattle = True
-
-
-@registerEvent(Hangar, '_populate')
-def Hangar_populate(self):
-    global isBattle
-    isBattle = False
 
 
 def reserevOfIndex(index, reserves):
@@ -130,12 +111,48 @@ def clanReserv(index):
     return result
 
 
+def formatTime(leftTime):
+    if autoReloadConfig:
+        readConfig()
+    h, m = divmod(leftTime / 60, 60)
+    hStr = "{:d}{:s} ".format(h, unitH) if h > 0 else ""
+    return "{:s}{:d}{:s}".format(hStr, m, unitM)
+
+
+@overrideMethod(LobbyHeaderMeta, 'as_setBoosterDataS')
+def as_setBoosterDataS(base, self, data):
+    # log('data = %s' % data)
+    if boosterEnabled:
+        hideActiveBooster = config.get('boosters/hideActiveBooster', False)
+        hideAvailableBoosters = config.get('boosters/hideAvailableBooster', False)
+        if data['hasActiveBooster'] and hideActiveBooster:
+            data['boosterIcon'] = BOOSTER_ICON_EMPTY
+            data['boosterBg'] = BOOSTER_ICON_EMPTY
+            data['boosterText'] = ''
+        elif data['hasAvailableBoosters'] and not data['hasActiveBooster'] and hideAvailableBoosters:
+            data['boosterIcon'] = BOOSTER_ICON_EMPTY
+            data['boosterBg'] = BOOSTER_ICON_EMPTY
+            data['boosterText'] = ''
+    base(self, data)
+
+
+@registerEvent(PlayerAccount, 'onArenaCreated')
+def onArenaCreated(self):
+    global isBattle
+    isBattle = True
+
+
+@registerEvent(Hangar, '_populate')
+def Hangar_populate(self):
+    global isBattle
+    isBattle = False
+
+
 @xvm.export('bst.countBoosters', deterministic=False)
 def getCountBoosters():
     global activeBoosters
     if not isBattle:
-        activeBoosters = goodiesCache.getBoosters(
-            criteria=REQ_CRITERIA.BOOSTER.ACTIVE).values()
+        activeBoosters = goodiesCache.getBoosters(criteria=REQ_CRITERIA.BOOSTER.ACTIVE).values()
     return len(activeBoosters)
 
 
@@ -151,7 +168,10 @@ def leftTimeMin(index=0, norm=None):
 @xvm.export('bst.leftTime', deterministic=False)
 def leftTime(index=0):
     b = booster(index)
-    return b.getShortLeftTimeStr() if b is not None else None
+    if b is not None:
+        return formatTime(b.getUsageLeftTime())
+    else:
+        return None
 
 
 @xvm.export('bst.name', deterministic=False)
@@ -193,7 +213,10 @@ def leftTimeMin(index=0, norm=None):
 @xvm.export('bst.leftTimeCR', deterministic=False)
 def leftTime(index=0):
     b = clanReserv(index)
-    return time_utils.getTillTimeString(b.getUsageLeftTime(), MENU.TIME_TIMEVALUESHORT) if b is not None else None
+    if b is not None:
+        return formatTime(b.getUsageLeftTime())
+    else:
+        return None
 
 
 @xvm.export('bst.nameCR', deterministic=False)
