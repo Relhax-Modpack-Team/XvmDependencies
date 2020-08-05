@@ -1,22 +1,19 @@
-import BigWorld
 import ResMgr
 import nations
 from Avatar import PlayerAvatar
+from AvatarInputHandler import AvatarInputHandler
 from Vehicle import Vehicle
+from aih_constants import CTRL_MODE_NAME
 from constants import ITEM_DEFS_PATH
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
 from gui.Scaleform.daapi.view.battle.shared.consumables_panel import ConsumablesPanel
-from gui.battle_control.battle_constants import SHELL_SET_RESULT
 from helpers import dependency
 from items import _xml, vehicles
 from skeletons.gui.battle_session import IBattleSessionProvider
-from AvatarInputHandler import AvatarInputHandler
-from aih_constants import CTRL_MODE_NAME
 
 import xvm_battle.python.battle as battle
 import xvm_main.python.config as config
 from xfw.events import registerEvent
-from xfw_actionscript.python import *
+from xfw_actionscript.python import as_event
 from xvm_main.python.logger import *
 
 SHELL_TYPES = {'armor_piercing': '{{l10n:armor_piercing}}',
@@ -33,15 +30,14 @@ DISPLAY_IN_MODES = [CTRL_MODE_NAME.ARCADE,
 
 gold_shells = {}
 xmlPath = ''
-gunName = None
 shellType = None
 shellSpeed = None
+shellsSpeed = {}
 goldShell = None
 piercingPower = None
 explosionRadius = None
 damage = None
 caliber = None
-playerVehicleID = None
 isLastShot = False
 quantityShells = {}
 visible = True
@@ -55,10 +51,10 @@ ResMgr.purge(xmlPath, True)
 
 
 def reset(isDead=False):
-    global shellType, goldShell, shellSpeed, piercingPower, explosionRadius, damage, caliber, quantityShells, gunName
+    global shellType, goldShell, shellSpeed, shellsSpeed, piercingPower, explosionRadius, damage, caliber, quantityShells
     if isDead:
         shellType = None
-        gunName = None
+        shellsSpeed = {}
         quantityShells = {}
     else:
         shellType = config.get('sight/shellType/not_shell', '')
@@ -72,7 +68,7 @@ def reset(isDead=False):
 
 
 def updateCurrentShell(intCD, ammoCtrl):
-    global shellType, explosionRadius, damage, piercingPower, shellSpeed, goldShell, caliber, isLastShot, gunName
+    global shellType, explosionRadius, damage, piercingPower, shellSpeed, goldShell, caliber
     shotDescr = vehicles.getItemByCompactDescr(intCD)
     shellType = config.get('sight/shellType', SHELL_TYPES).get(shotDescr.kind.lower(), None)
     explosionRadius = shotDescr.type.explosionRadius if hasattr(shotDescr.type, 'explosionRadius') else None
@@ -81,11 +77,8 @@ def updateCurrentShell(intCD, ammoCtrl):
     piercingPower = gunSetting.getPiercingPower(intCD)
     caliber = shotDescr.caliber
     goldShell = 'gold' if shotDescr.id[1] in gold_shells[nations.NAMES[shotDescr.id[0]]] else None
-#    if ownVehicle is None:
-#        ownVehicle = BigWorld.entities.get(BigWorld.player().playerVehicleID, None)
-#    shellSpeed = int(ownVehicle.typeDescriptor.shot.speed * 1.25) if ownVehicle is not None else None
-    xmlPath = ITEM_DEFS_PATH + '/vehicles/' + nations.NAMES[shotDescr.id[0]] + '/components/guns.xml'
-    shellSpeed = ResMgr.openSection(xmlPath + '/shared/' + gunName + '/shots/' + shotDescr.name).readInt('speed')
+    shellSpeed = shellsSpeed.get(intCD, None)
+
 
 def shellsUpdatedOrAdd(intCD, quantity):
     global quantityShells, isLastShot
@@ -121,7 +114,7 @@ def infoChargedShell__onShellsAdded(self, intCD, descriptor, quantity, _, gunSet
 
 @registerEvent(ConsumablesPanel, '_ConsumablesPanel__onShellsUpdated')
 def infoChargedShell__onShellsUpdated(self, intCD, quantity, *args):
-    global quantityShells, isLastShot
+    global quantityShells
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         shellsUpdatedOrAdd(intCD, quantity)
 
@@ -138,13 +131,9 @@ def infoChargedShell__onCurrentShellChanged(self, intCD):
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global visible, gunName
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
-        try:
-            if self.typeDescriptor is not None:
-                gunName = self.typeDescriptor.gun.name
-        except:
-            pass
+        global visible, shellsSpeed
+        shellsSpeed = {shot.shell.compactDescr: int(shot.speed * 1.25) for shot in self.typeDescriptor.gun.shots}
         visible = True
 
 
@@ -152,6 +141,7 @@ def Vehicle_onEnterWorld(self, prereqs):
 def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
     if not (health > 0 and isCrewActive) and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         reset(True)
+
 
 @registerEvent(PlayerAvatar, '_PlayerAvatar__destroyGUI')
 def PlayerAvatar__destroyGUI(self):
