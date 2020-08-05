@@ -11,7 +11,7 @@ from gui.Scaleform.daapi.view.lobby.messengerBar.VehicleCompareCartButton import
 from gui.Scaleform.daapi.view.meta.MessengerBarMeta import MessengerBarMeta
 
 import xvm_main.python.utils as utils
-from xfw import registerEvent
+from xfw.events import registerEvent
 from xfw_actionscript.python import as_event, as_callback
 
 #####################################################################
