@@ -9,12 +9,12 @@ from Vehicle import Vehicle
 from messenger import MessengerEntry
 from functools import partial
 from constants import ATTACK_REASONS
+from chat_commands_consts import BATTLE_CHAT_COMMAND_NAMES
 from gui.shared.personality import ServicesLocator
 from gui.Scaleform.framework import ViewTypes
-from gui.Scaleform.daapi.view.battle.shared.markers2d.plugins import VehicleMarkerPlugin
+from gui.Scaleform.daapi.view.battle.shared.markers2d.vehicle_plugins import VehicleMarkerPlugin
 from gui.Scaleform.daapi.view.battle.shared.indicators import SixthSenseIndicator
 from gui.battle_control import avatar_getter
-from gui.battle_control.controllers.chat_cmd_ctrl import CHAT_COMMANDS
 from gui.shared.gui_items.Vehicle import VEHICLE_CLASS_NAME
 
 SEND_TIMEOUT = 0.5
@@ -90,7 +90,7 @@ def showDamageFromExplosion(self, attackerID, center, effectsIndex, damageFactor
 def iAmSpotted():
     
     def sosCommand(player):
-        player.guiSessionProvider.shared.chatCommands.handleChatCommand(CHAT_COMMANDS.SOS)
+        player.guiSessionProvider.shared.chatCommands.handleChatCommand(BATTLE_CHAT_COMMAND_NAMES.SOS)
     
     player = BigWorld.player()
     alive_allies = {id: data for id, data in player.arena.vehicles.items() if data['team'] == player.team and data['isAlive']}
@@ -174,7 +174,7 @@ def clipCooldownTimeMsgOnReload(avatar):
         message = message.replace('{{clipReloadTime}}', '{}'.format(ceil(avatar.guiSessionProvider.shared.ammo.getGunReloadingState().getTimeLeft())))
         avatar.guiSessionProvider.shared.chatCommands.proto.arenaChat.broadcast(message, 0)
     else:
-        avatar.guiSessionProvider.shared.chatCommands.handleChatCommand(CHAT_COMMANDS.RELOADINGGUN)
+        avatar.guiSessionProvider.shared.chatCommands.handleChatCommand(BATTLE_CHAT_COMMAND_NAMES.RELOADINGGUN)
 
 @overrideMethod(PlayerAvatar, 'handleKey')
 def handleKey(base, self, isDown, key, mods):
@@ -198,7 +198,7 @@ def attackEnemyCommandOnSight(avatar, target):
     global lastAttackCommandTime
     
     if ((BigWorld.serverTime() - lastAttackCommandTime) > battleMessagesConfig['attackCommandOnSight']['timeout']) and (BigWorld.target() == target):
-        avatar.guiSessionProvider.shared.chatCommands.sendTargetedCommand(CHAT_COMMANDS.ATTACKENEMY, target.id)
+        avatar.guiSessionProvider.shared.chatCommands.sendTargetedCommand(BATTLE_CHAT_COMMAND_NAMES.ATTACK_ENEMY, target.id)
     
     lastAttackCommandTime = BigWorld.serverTime()
 
