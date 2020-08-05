@@ -4,10 +4,12 @@ from helpers import dependency
 from skeletons.gui.battle_session import IBattleSessionProvider
 from gui.Scaleform.daapi.view.battle.shared.battle_timers import BattleTimer
 from gui.Scaleform.daapi.view.battle.epic.battle_timer import EpicBattleTimer
+from gui.battle_control.controllers.period_ctrl import ArenaPeriodController
 
 from xfw.events import registerEvent
 from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
+from xvm_main.python.logger import *
 
 minutes = None
 seconds = None
@@ -18,11 +20,11 @@ arenaPeriod = None
 def updateTime(_minutes, _seconds):
     global minutes, seconds
     if battle.isBattleTypeSupported:
-        if startBattle not in [2, 3]:
+        if (startBattle not in [2, 3]) and (_minutes * 60 + _seconds > 30):
             _minutes, _seconds = None, None
         if minutes != _minutes or seconds != _seconds:
             minutes, seconds = _minutes, _seconds
-        as_event('ON_BATTLE_TIMER')
+            as_event('ON_BATTLE_TIMER')
 
 
 @registerEvent(EpicBattleTimer, '_sendTime')
@@ -47,10 +49,12 @@ def PlayerAvatar__onArenaPeriodChange(self, period, periodEndTime, periodLength,
 def onEnterWorld(self, prereqs):
     global minutes, seconds, startBattle
     if self.isPlayerVehicle and battle.isBattleTypeSupported:
-        sessionProvider = dependency.instance(IBattleSessionProvider)
-        minutes = None
-        seconds = None
-        startBattle = sessionProvider.shared.arenaPeriod.getPeriod()
+        # sessionProvider = dependency.instance(IBattleSessionProvider)
+        # minutes = None
+        # seconds = None
+        # startBattle = sessionProvider.shared.arenaPeriod.getPeriod()
+        startBattle = self.guiSessionProvider.shared.arenaPeriod.getPeriod()
+        as_event('ON_BATTLE_TIMER')
 
 
 @xvm.export('xvm.minutesBT', deterministic=False)
@@ -65,6 +69,7 @@ def xvm_secondsBT():
 
 @xvm.export('xvm.critTimeBT', deterministic=False)
 def xvm_critTimeBT(_critTime=120):
-    if seconds is None:
+    if seconds is None or minutes is None:
         return None
-    return '#FF0000' if (_critTime > (minutes * 60 + seconds)) and (startBattle == 3) else None
+    else:
+        return '#FF0000' if (_critTime > (minutes * 60 + seconds)) and (startBattle == 3) else None
