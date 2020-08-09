@@ -4,7 +4,9 @@ rem # create_zips.bat
 rem # zip creation batch file
 rem # Willster419
 rem # 2020-08-08
-rem # Creates zip files of all targets listed
+rem # Creates zip files of all targets listed. Make sure that the 7zip
+rem # executable is in your %PATH%, or the full path is 
+rem # specified in the SEVEN_ZIP_BIN var.
 rem #####################################################################
 
 rem # useful links ######################################################
@@ -29,6 +31,10 @@ rem # set paths #########################################################
 set REPO_ROOT=%CD%
 set PY_ROOT=%REPO_ROOT%\PY
 set XC_ROOT=%REPO_ROOT%\XC
+rem # you can give an absolute value to the 7zip binary here, make sure
+rem # that it's in quotes
+rem #set SEVEN_ZIP_BIN="C:\Program Files\7-Zip\7z.exe"
+set SEVEN_ZIP_BIN="7z"
 echo REPO_ROOT: %REPO_ROOT%
 echo PY_ROOT:   %PY_ROOT%
 echo XC_ROOT:   %XC_ROOT%
@@ -63,8 +69,7 @@ for /d %%E in ("%PY_ROOT%"\*) do (
 )
 rem #####################################################################
 
-rem # for each folder, get all files in it and run 7zip #################
-rem dir /a:d "%PY_ROOT%"
+rem # for each folder, call a task to get all files in it and run 7zip ##
 set /A INDEX=0
 for %%F in (%DIRS%) do (
   echo PROCESSING DIRECTORY %%F
@@ -77,6 +82,11 @@ echo Script is done
 GOTO :eof
 rem #####################################################################
 
+rem # fileLoop: function declaration ####################################
+rem # find all files in a given folder, and add to a specified zip file.
+rem # Use the 7zip command line utility to perform the zipping.
+rem # In theory you could use any zip program, just change the SEVEN
+rem # var to match it's arguements.
 :fileLoop
 set "FOLDER=!%1!"
 set "ZIP_FILE=!%2!"
@@ -92,10 +102,11 @@ for /r %FOLDER% %%G in (*) do (
 rem for debug
 rem echo !FILES!
 rem # "7zip command: 7z u '$$TARGET' $$FILES"
-set SEVEN=7z u !ZIP_FILE!!FILES!
+set SEVEN=!SEVEN_ZIP_BIN! u !ZIP_FILE!!FILES!
 echo DEBUG: 7zip command:
 echo !SEVEN!
 !SEVEN!
 EXIT /B
+rem #####################################################################
 
 ENDLOCAL
