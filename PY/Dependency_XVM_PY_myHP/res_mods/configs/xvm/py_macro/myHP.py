@@ -25,7 +25,7 @@ def onHealthChanged(self, newHealth, attackerID, attackReasonID):
 def Vehicle_onEnterWorld(self, prereqs):
     global maxHealth, health, vehicle, dmg, oldHealth
     if self.isPlayerVehicle:
-        maxHealth = self.typeDescriptor.maxHealth
+        maxHealth = self.maxHealth
         oldHealth = maxHealth
         health = self.health
         vehicle = self
