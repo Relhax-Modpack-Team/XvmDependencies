@@ -35,7 +35,7 @@ rem #####################################################################
 SETLOCAL ENABLEDELAYEDEXPANSION
 rem # get folders to make zip files from ################################
 set DIRS=
-echo Folders to act on
+rem echo Folders to act on
 
 rem XC FILES
 for /d %%D in ("%XC_ROOT%"\*) do (
