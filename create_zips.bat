@@ -37,17 +37,21 @@ rem # get folders to make zip files from ################################
 set DIRS=
 echo Folders to act on
 
+rem XC FILES
 for /d %%D in ("%XC_ROOT%"\*) do (
-  rem echo %%~fD # was for debug
+  rem for debug
+  rem echo %%~fD
   set DIRS=!DIRS! "%%~fD"
 )
 
+rem PY FILES
 rem for /d %%D in ("%PY_ROOT%"\*) do (
 rem  set DIRS=!DIRS! "%%~fD"
 rem )
 
 for %%D in (%DIRS%) do (
-  echo %%D
+  rem FOR DEBUG
+  rem echo %%D 
 )
 rem #####################################################################
 
@@ -55,7 +59,7 @@ rem # for each folder, get all files in it and run 7zip #################
 rem set FILES=
 rem dir /a:d "%PY_ROOT%"
 for %%D in (%DIRS%) do (
-  echo PROCESSING DIRECTORY "%%D"
+  echo PROCESSING DIRECTORY %%D
   rem for %%FILES in ('dir ')
 )
 rem #####################################################################
