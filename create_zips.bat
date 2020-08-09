@@ -51,6 +51,14 @@ for %%D in (%DIRS%) do (
 )
 rem #####################################################################
 
+rem # for each folder, get all files in it and run 7zip #################
+rem set FILES=
+rem dir /a:d "%PY_ROOT%"
+for %%D in (%DIRS%) do (
+  echo PROCESSING DIRECTORY "%%D"
+  rem for %%FILES in ('dir ')
+)
+rem #####################################################################
 
 ENDLOCAL
 echo Script is done
