@@ -17,6 +17,8 @@ rem # https://www.tutorialspoint.com/batch_script/batch_script_arrays.htm
 rem # https://www.robvanderwoude.com/variableexpansion.php
 rem # https://www.robvanderwoude.com/for.php
 rem # https://stackoverflow.com/questions/30335159/windows-cmd-batch-for-r-with-delayedexpansion
+rem # https://stackoverflow.com/a/25791900/3128017
+rem # https://stackoverflow.com/a/20385978/3128017
 rem #####################################################################
 
 rem # get the date in the form YYYY-MM-DD ###############################
@@ -42,8 +44,8 @@ rem #####################################################################
 
 SETLOCAL ENABLEDELAYEDEXPANSION
 rem # get folders to make zip files from ################################
-set DIRS=
 set ZIPS=
+set SEVEN_SEARCH_COMMAND=
 set /A INDEX=0
 rem echo Folders to act on
 
@@ -52,61 +54,54 @@ rem for loop vars can only be one character because reasons.
 for /d %%D in ("%XC_ROOT%"\*) do (
   rem for debug
   rem echo %%~fD
-  set DIRS=!DIRS! "%%~fD"
-  set ZIPS[!INDEX!]="%%~fD_%DATE_FORMAT%.zip"
+  rem set the zip to the cd path, then the name of the folder, then
+  rem date and .zip
+  set ZIPS[!INDEX!]="!CD!\%%~nD_%DATE_FORMAT%.zip"
+  set SEVEN_SEARCH_COMMAND[!INDEX!]="%%~fD\*"
+
   rem echo !INDEX!
   set /A INDEX=!INDEX!+1
 )
 
 rem for debug, how to print array
-rem echo !ZIPS[0]!
+rem echo ZIP:    !ZIPS[0]!
+rem echo SEARCH: !SEVEN_SEARCH_COMMAND[0]!
 
 rem PY FILES
-for /d %%E in ("%PY_ROOT%"\*) do (
-  set DIRS=!DIRS! "%%~fE"
-  set ZIPS[!INDEX!]="%%~fE_%DATE_FORMAT%.zip"
+for /d %%D in ("%PY_ROOT%"\*) do (
+  set ZIPS[!INDEX!]="!CD!\%%~nD_%DATE_FORMAT%.zip"
+  set SEVEN_SEARCH_COMMAND[!INDEX!]="%%~fD\*"
+
   set /A INDEX=!INDEX!+1
 )
 rem #####################################################################
 
-rem # for each folder, call a task to get all files in it and run 7zip ##
+rem #for each zip file, run 7zip to collect files and keep structure ####
 set /A INDEX=0
-for %%F in (%DIRS%) do (
-  echo PROCESSING DIRECTORY %%F
-  set TEST=%%F
-  call :fileLoop TEST ZIPS[!INDEX!]
+:SymLoop
+if defined ZIPS[!INDEX!] (
+  rem for debug
+  rem echo !ZIPS[%INDEX%]!
+
+  set ZIP=!ZIPS[%INDEX%]!
+  set SEARCH=!SEVEN_SEARCH_COMMAND[%INDEX%]!
+  rem for debug
+  rem echo ZIP:    !ZIP!
+  rem echo SEARCH: !SEARCH!
+
+  rem "7zip command: 7z u 'TARGET_ZIP' TARGET_DIR\*"
+  set SEVEN=!SEVEN_ZIP_BIN! u !ZIP! !SEARCH!
+  rem for debug
+  rem echo DEBUG: 7zip command:
+  rem echo !SEVEN!
+  !SEVEN!
+
   set /A INDEX=!INDEX!+1
+  GOTO :SymLoop
 )
 
 echo Script is done
 GOTO :eof
-rem #####################################################################
-
-rem # fileLoop: function declaration ####################################
-rem # find all files in a given folder, and add to a specified zip file.
-rem # Use the 7zip command line utility to perform the zipping.
-rem # In theory you could use any zip program, just change the SEVEN
-rem # var to match it's arguements.
-:fileLoop
-set "FOLDER=!%1!"
-set "ZIP_FILE=!%2!"
-set FILES=
-rem for debug
-rem echo !FOLDER!
-rem echo !ZIP_FILE!
-for /r %FOLDER% %%G in (*) do (
-  rem for debug
-  rem echo %%G
-  set FILES=!FILES! "%%G"
-)
-rem for debug
-rem echo !FILES!
-rem # "7zip command: 7z u '$$TARGET' $$FILES"
-set SEVEN=!SEVEN_ZIP_BIN! u !ZIP_FILE!!FILES!
-echo DEBUG: 7zip command:
-echo !SEVEN!
-!SEVEN!
-EXIT /B
 rem #####################################################################
 
 ENDLOCAL

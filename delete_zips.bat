@@ -13,7 +13,7 @@ echo REPO_ROOT: %REPO_ROOT%
 rem #####################################################################
 
 rem # collect all zip files and delete ##################################
-for /r "%CD%" %%G in (*.zip) do (
+for %%G in (*.zip) do (
   rem for debug
   echo "Deleting %%G"
   del "%%G"
