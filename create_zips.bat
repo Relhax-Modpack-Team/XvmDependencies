@@ -56,9 +56,11 @@ rem for debug, how to print array
 rem echo !ZIPS[0]!
 
 rem PY FILES
-rem for /d %%E in ("%PY_ROOT%"\*) do (
-rem  set DIRS=!DIRS! "%%~fE"
-rem )
+for /d %%E in ("%PY_ROOT%"\*) do (
+  set DIRS=!DIRS! "%%~fE"
+  set ZIPS[!INDEX!]="%%~fE_%DATE_FORMAT%.zip"
+  set /A INDEX=!INDEX!+1
+)
 rem #####################################################################
 
 rem # for each folder, get all files in it and run 7zip #################
