@@ -23,8 +23,8 @@ rem #####################################################################
 
 rem # get the date in the form YYYY-MM-DD ###############################
 set YEAR=%date:~10,4%
-set MONTH=%date:~7,2%
-set DAY=%date:~4,2%
+set DAY=%date:~7,2%
+set MONTH=%date:~4,2%
 set DATE_FORMAT=%YEAR%-%MONTH%-%DAY%
 echo Using date format %DATE_FORMAT%
 rem #####################################################################
