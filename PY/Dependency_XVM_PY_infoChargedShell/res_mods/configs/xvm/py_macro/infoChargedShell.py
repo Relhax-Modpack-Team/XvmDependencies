@@ -106,21 +106,21 @@ def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
         as_event('ON_AMMO_CHANGED')
 
 
-@registerEvent(ConsumablesPanel, '_ConsumablesPanel__onShellsAdded')
-def infoChargedShell__onShellsAdded(self, intCD, descriptor, quantity, _, gunSettings):
+@registerEvent(ConsumablesPanel, '_onShellsAdded')
+def infoChargedShell_onShellsAdded(self, intCD, descriptor, quantity, _, gunSettings):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         shellsUpdatedOrAdd(intCD, quantity)
 
 
-@registerEvent(ConsumablesPanel, '_ConsumablesPanel__onShellsUpdated')
-def infoChargedShell__onShellsUpdated(self, intCD, quantity, *args):
+@registerEvent(ConsumablesPanel, '_onShellsUpdated')
+def infoChargedShell_onShellsUpdated(self, intCD, quantity, *args):
     global quantityShells
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         shellsUpdatedOrAdd(intCD, quantity)
 
 
-@registerEvent(ConsumablesPanel, '_ConsumablesPanel__onCurrentShellChanged')
-def infoChargedShell__onCurrentShellChanged(self, intCD):
+@registerEvent(ConsumablesPanel, '_onCurrentShellChanged')
+def infoChargedShell_onCurrentShellChanged(self, intCD):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         if isLastShot:
             return reset()
