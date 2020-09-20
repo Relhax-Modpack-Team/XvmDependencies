@@ -76,7 +76,7 @@ battleEff = battleEfficiency()
 ###
 
 @registerEvent(BattleRibbonsPanel, '_addRibbon')
-def _addRibbon(self, ribbonID, ribbonType='', leftFieldStr='', vehName='', vehType='', rightFieldStr=''):
+def _addRibbon(self, ribbonID, ribbonType='', leftFieldStr='', vehName='', vehType='', rightFieldStr='', bonusRibbonLabelID=''):
     if ribbonType not in [BET.DETECTION, BET.DESTRUCTION, BET.DEFENCE, BET.CAPTURE]:
         return
     
