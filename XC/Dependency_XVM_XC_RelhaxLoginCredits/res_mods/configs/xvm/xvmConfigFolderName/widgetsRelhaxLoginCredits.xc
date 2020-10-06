@@ -12,18 +12,16 @@
     /*
             RELHAX MODPACK TEAM
     Developed by:       -- Translated by:
-    Willster419         en Rkk1945
-    elektrosmoker       en Merkk
-    Dirty20067          de Grumpelumpf
+    Willster419         de Grumpelumpf
+    elektrosmoker       fr Merkk/Khosumi
+    Dirty20067          fr Toshiro/Mattéo
     123Gauss            pl Nullmaruzero
     The_Illusion        pl Neoros
-    SaucE               fr Toshiro
-    Zethen              es LordFelix
-                        ru DrWeb7_1
-    Media Relations:        
-    Silvers_            
+    Robo_Boy            ru DrWeb7_1
+                        es LordFelix
+    Media Relations:
+    Silvers_
     */
-    
     
     
     "OM_Logo": {
@@ -96,7 +94,7 @@
                 "screenVAlign": "center",       // Vertical alignment of field at screen ("top", "center", "botton").
                 "shadow":       { "enabled": true, "distance": 0, "angle": 0, "color": "0x000000", "alpha": 100, "blur": 2, "strength": 6 },
                 "textFormat":   { "font": "DinPro-Bold", "color": "0x75bc81", "size": 20, "align": "right", "valign": "top"},
-                "format":       "<u><font color='#84c4ca'>Developed by:</font></u> \nWillster419 <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'> \nelektrosmoker <img src='xvm://res/icons/flags/at.png' width='16' height='13' vspace='-1'> \ndirty20067 <img src='xvm://res/icons/flags/de.png' width='16' height='13' vspace='-1'> \n123Gauss <img src='xvm://res/icons/flags/de.png' width='16' height='13' vspace='-1'> \nThe_Illusion <img src='xvm://res/icons/flags/ca.png' width='16' height='13' vspace='-1'> \nSaucE <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'> \nZethen <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'>\n\n<u><font color='#84c4ca'>Media Relations:</font></u> \nSilvers_ <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'>"
+                "format":       "<u><font color='#84c4ca'>Developed by:</font></u> \nWillster419 <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'> \nelektrosmoker <img src='xvm://res/icons/flags/at.png' width='16' height='13' vspace='-1'> \ndirty20067 <img src='xvm://res/icons/flags/de.png' width='16' height='13' vspace='-1'> \n123Gauss <img src='xvm://res/icons/flags/de.png' width='16' height='13' vspace='-1'> \nThe_Illusion <img src='xvm://res/icons/flags/ca.png' width='16' height='13' vspace='-1'> \nRobo_Boy <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'>\n\n<u><font color='#84c4ca'>Media Relations:</font></u> \nSilvers_ <img src='xvm://res/icons/flags/us.png' width='16' height='13' vspace='-1'>"
             }
         ]
     },
@@ -115,7 +113,7 @@
                 "screenVAlign": "center",       // Vertical alignment of field at screen ("top", "center", "botton").
                 "shadow":       { "enabled": true, "distance": 0, "angle": 0, "color": "0x000000", "alpha": 100, "blur": 2, "strength": 6 },
                 "textFormat":   { "font": "DinPro-Bold", "color": "0x75bc81", "size": 20, "align": "left", "valign": "top"},
-                "format":       "<img src='xvm://res/icons/flags/unknown.png' width='16' height='13' vspace='-1'> <u><font color='#84c4ca'>Translated by:</font></u>\n<img src='xvm://res/icons/flags/gb.png' width='16' height='13' vspace='-1'> Rkk1945\n<img src='xvm://res/icons/flags/gb.png' width='16' height='13' vspace='-1'> Merkk\n<img src='xvm://res/icons/flags/de.png' width='16' height='13' vspace='-1'> Grumpelumpf\n<img src='xvm://res/icons/flags/pl.png' width='16' height='13' vspace='-1'> Nullmaruzero\n<img src='xvm://res/icons/flags/pl.png' width='16' height='13' vspace='-1'> Neoros\n<img src='xvm://res/icons/flags/fr.png' width='16' height='13' vspace='-1'> Toshiro\n<img src='xvm://res/icons/flags/es.png' width='16' height='13' vspace='-1'> LordFelix\n<img src='xvm://res/icons/flags/ru.png' width='16' height='13' vspace='-1'> DrWeb7_1"
+                "format":       "<img src='xvm://res/icons/flags/unknown.png' width='16' height='13' vspace='-1'> <u><font color='#84c4ca'>Translated by:</font></u>\n<img src='xvm://res/icons/flags/de.png' width='16' height='13' vspace='-1'> Grumpelumpf\n<img src='xvm://res/icons/flags/fr.png' width='16' height='13' vspace='-1'> Merkk/Khosumi\n<img src='xvm://res/icons/flags/fr.png' width='16' height='13' vspace='-1'> Toshiro/Mattéo\n<img src='xvm://res/icons/flags/pl.png' width='16' height='13' vspace='-1'> Nullmaruzero\n<img src='xvm://res/icons/flags/pl.png' width='16' height='13' vspace='-1'> Neoros\n<img src='xvm://res/icons/flags/es.png' width='16' height='13' vspace='-1'> LordFelix\n<img src='xvm://res/icons/flags/ru.png' width='16' height='13' vspace='-1'> DrWeb7_1\n"
             }
         ]
     }
