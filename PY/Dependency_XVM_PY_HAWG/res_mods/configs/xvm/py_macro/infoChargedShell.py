@@ -113,14 +113,14 @@ def infoChargedShell_onShellsAdded(self, intCD, descriptor, quantity, _, gunSett
 
 
 @registerEvent(ConsumablesPanel, '_onShellsUpdated')
-def infoChargedShell__onShellsUpdated(self, intCD, quantity, *args):
+def infoChargedShell_onShellsUpdated(self, intCD, quantity, *args):
     global quantityShells
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         shellsUpdatedOrAdd(intCD, quantity)
 
 
 @registerEvent(ConsumablesPanel, '_onCurrentShellChanged')
-def infoChargedShell__onCurrentShellChanged(self, intCD):
+def infoChargedShell_onCurrentShellChanged(self, intCD):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         if isLastShot:
             return reset()

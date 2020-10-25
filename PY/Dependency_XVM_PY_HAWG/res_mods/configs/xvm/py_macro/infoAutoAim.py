@@ -1,19 +1,16 @@
+import BattleReplay
 import BigWorld
+import gui.Scaleform.daapi.view.battle.shared.markers2d.plugins as plug
 from Avatar import PlayerAvatar
 from AvatarInputHandler import AvatarInputHandler
 from Vehicle import Vehicle
 from aih_constants import CTRL_MODE_NAME
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
+from constants import AIMING_MODE
 from vehicle_systems.tankStructure import TankPartIndexes
-import AvatarInputHandler.AimingSystems.magnetic_aim as aim
-from gui.battle_control import event_dispatcher
-import gui.Scaleform.daapi.view.battle.shared.markers2d.plugins as plug
-from AvatarInputHandler.control_modes import _GunControlMode
-import BattleReplay
 
-import xvm_main.python.config as config
 import xvm_battle.python.battle as battle
-from xfw.events import registerEvent, overrideMethod
+import xvm_main.python.config as config
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
 
@@ -146,16 +143,13 @@ def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
 def Vehicle_onEnterWorld(self, prereqs):
     global targetName, targetVehicle, targetHealth, playerVehicleID, targetID, marker, visible
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
+        marker = None
         if config.get('sight/autoAim/enabled', False):
             markerType = config.get('sight/autoAim/markerType', '')
             if markerType.strip().lower() == 'cylinder':
                 marker = Cylinder()
             elif markerType.strip().lower() == 'arrow':
                 marker = Arrow()
-            else:
-                marker = None
-        else:
-            marker = None
         targetName = None
         targetVehicle = None
         targetHealth = None
@@ -188,10 +182,9 @@ def _addMarker(self, vehicleID):
         setTarget(vehicleID)
         as_event('ON_AUTO_AIM')
 
-
-@registerEvent(plug.VehicleMarkerTargetPlugin, '_hideVehicleMarker')
-def _hideVehicleMarker(self, vehicleID):
-    if vehicleID == targetID:
+@registerEvent(AvatarInputHandler, 'setAimingMode')
+def _setAimingMode(self, enable, mode):
+    if mode == AIMING_MODE.TARGET_LOCK and not enable:
         resetTarget()
         as_event('ON_AUTO_AIM')
 

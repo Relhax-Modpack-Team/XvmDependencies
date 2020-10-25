@@ -1,14 +1,13 @@
-from gui.Scaleform.daapi.view.battle.shared.indicators import _DamageIndicator, DamageIndicatorMeta
-
-from AvatarInputHandler.control_modes import ArcadeControlMode, SniperControlMode, StrategicControlMode
-from xvm_main.python.logger import *
-from Vehicle import Vehicle
-import BigWorld
 from math import pi
 
-from xfw_actionscript.python import *
-from xfw.events import registerEvent, overrideMethod
+import BigWorld
+from AvatarInputHandler.control_modes import ArcadeControlMode, SniperControlMode, StrategicControlMode
+from Vehicle import Vehicle
+from gui.Scaleform.daapi.view.battle.shared.indicators import _DamageIndicator, DamageIndicatorMeta
 
+from xfw.events import registerEvent, overrideMethod
+from xfw_actionscript.python import *
+from xvm_main.python.logger import *
 
 alpha = 0
 di = {}
