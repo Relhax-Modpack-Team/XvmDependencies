@@ -1,15 +1,13 @@
 from Avatar import PlayerAvatar
+from AvatarInputHandler import AvatarInputHandler
 from BigWorld import cancelCallback, time, callback
 from Vehicle import Vehicle
-from constants import ARENA_GUI_TYPE
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
+from aih_constants import CTRL_MODE_NAME
 from gui.Scaleform.daapi.view.battle.shared.crosshair.plugins import AmmoPlugin
 from gui.Scaleform.daapi.view.battle.shared.damage_panel import DamagePanel
 from gui.Scaleform.daapi.view.meta.CrosshairPanelContainerMeta import CrosshairPanelContainerMeta
 from gui.Scaleform.daapi.view.meta.DualGunPanelMeta import DualGunPanelMeta
 from gui.battle_control.controllers.consumables.ammo_ctrl import AmmoReplayPlayer
-from AvatarInputHandler import AvatarInputHandler
-from aih_constants import CTRL_MODE_NAME
 
 import xvm_battle.python.battle as battle
 import xvm_main.python.config as config
@@ -53,6 +51,7 @@ def resetCallback(CallbackID):
     if CallbackID is not None:
         cancelCallback(CallbackID)
     return None
+
 
 def reloadTimer():
     global leftTime, reloadTimerCallbackID
@@ -174,7 +173,7 @@ def reloading_as_setReloadingS(self, duration, baseTime, startTime, isReloading)
 
 
 @registerEvent(AmmoReplayPlayer, 'setGunAutoReloadTime')
-def reloading_setGunAutoReloadTime(self, timeLeft, baseTime, isSlowed):
+def reloading_setGunAutoReloadTime(self, timeLeft, baseTime, isSlowed, isBoostApplicable):
     if config.get('sight/enabled', True) and isAutoReload and not isDualGun and battle.isBattleTypeSupported and isAlive:
         # log('setGunAutoReloadTime =    leftTeme = %s  baseTime = %s' % (timeLeft, baseTime))
         autoReloading(timeLeft, baseTime)
