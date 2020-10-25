@@ -26,7 +26,7 @@ autoReloadConfig = False
 isBattle = False
 goodiesCache = dependency.instance(IGoodiesCache)
 
-activeBoosters = None
+activeBoosters = []
 activeReserves = {}
 activeClanReserves = None
 
@@ -74,6 +74,9 @@ def readConfig():
 
 readConfig()
 
+def getActiveBoosters():
+    boosters = goodiesCache.getBoosters(criteria=REQ_CRITERIA.BOOSTER.ACTIVE)
+    return [Reserve(boosterValues._goodieDescription, boosterValues.finishTime) for boosterValues in boosters.itervalues()]
 
 def reserevOfIndex(index, reserves):
     countReserves = len(reserves)
@@ -88,9 +91,7 @@ def reserevOfIndex(index, reserves):
 def booster(index):
     global activeBoosters
     if not isBattle:
-        activeBoosters = []
-        for boosterValues in goodiesCache.getBoosters(criteria=REQ_CRITERIA.BOOSTER.ACTIVE).itervalues():
-            activeBoosters.append(Reserve(boosterValues._goodieDescription, boosterValues.finishTime))
+        activeBoosters = getActiveBoosters()
     index, result = reserevOfIndex(index, activeBoosters)
     if isBattle:
         if (result is not None) and (result.getUsageLeftTime() <= 0):
@@ -152,7 +153,7 @@ def Hangar_populate(self):
 def getCountBoosters():
     global activeBoosters
     if not isBattle:
-        activeBoosters = goodiesCache.getBoosters(criteria=REQ_CRITERIA.BOOSTER.ACTIVE).values()
+        activeBoosters = getActiveBoosters()
     return len(activeBoosters)
 
 
