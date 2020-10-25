@@ -48,7 +48,7 @@ def _populate(self):
         as_event('ON_VC_BST')
 
 @registerEvent(VehicleCompareCartButton, '_VehicleCompareCartButton__onCountChanged')
-def onCountChanged(self, _):
+def onCountChanged(self, _, __):
     global countVehicles
     countVehicles = self.comparisonBasket.getVehiclesCount()
 
