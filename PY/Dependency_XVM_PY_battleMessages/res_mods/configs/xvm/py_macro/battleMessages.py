@@ -10,8 +10,8 @@ from messenger import MessengerEntry
 from functools import partial
 from constants import ATTACK_REASONS
 from chat_commands_consts import BATTLE_CHAT_COMMAND_NAMES
+from frameworks.wulf import WindowLayer
 from gui.shared.personality import ServicesLocator
-from gui.Scaleform.framework import ViewTypes
 from gui.Scaleform.daapi.view.battle.shared.markers2d.vehicle_plugins import VehicleMarkerPlugin
 from gui.Scaleform.daapi.view.battle.shared.indicators import SixthSenseIndicator
 from gui.battle_control import avatar_getter
@@ -118,7 +118,7 @@ def showTeamDamage(message):
     elif messageIn == 'killog':
         ctrl = ServicesLocator.appLoader.getDefBattleApp()
         if ctrl is not None:
-            battle_page = ctrl.containerManager.getContainer(ViewTypes.VIEW).getView()
+            battle_page = ctrl.containerManager.getContainer(WindowLayer.VIEW).getView()
             battle_page.components['battlePlayerMessages'].as_showRedMessageS(None, message)
 
 @registerEvent(PlayerAvatar, 'onBecomeNonPlayer')
