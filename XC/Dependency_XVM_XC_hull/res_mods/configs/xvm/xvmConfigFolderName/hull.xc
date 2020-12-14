@@ -469,6 +469,7 @@
     "uk-GB32_Tortoise":"<font>228.6/152.4/101.6</font>",
     "uk-GB33_Sentinel_AC_I":"<font>65/45/45</font>",
     "uk-GB35_Sentinel_AC_IV":"<font>65/45/45</font>",
+	"uk-GB37_Valliant":"<font>114/75/60</font>",
     "uk-GB39_Universal_CarrierQF2":"<font></font>",
     "uk-GB40_Gun_Carrier_Churchill":"<font>88.9/63.5/50.8</font>",
     "uk-GB41_Challenger":"<font>88.9/50.8/38.1</font>",

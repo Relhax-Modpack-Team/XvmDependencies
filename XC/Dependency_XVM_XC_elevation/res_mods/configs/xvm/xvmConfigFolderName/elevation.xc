@@ -469,6 +469,7 @@
     "uk-GB32_Tortoise":"<font>-10°/+20°</font>",
     "uk-GB33_Sentinel_AC_I":"<font>-10°/+20°</font>",
     "uk-GB35_Sentinel_AC_IV":"<font>-10°/+20°</font>",
+	"uk-GB37_Valliant":"<font>-13°/+20°°</font>",
     "uk-GB39_Universal_CarrierQF2":"<font>-5°/+15°</font>",
     "uk-GB40_Gun_Carrier_Churchill":"<font>-10°/+15°</font>",
     "uk-GB41_Challenger":"<font>-10°/+20°</font>",

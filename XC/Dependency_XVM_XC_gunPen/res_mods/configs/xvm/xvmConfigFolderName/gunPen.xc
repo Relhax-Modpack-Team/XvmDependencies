@@ -469,6 +469,7 @@
     "uk-GB32_Tortoise":"<font>Pen-259/326/120</font>",
     "uk-GB33_Sentinel_AC_I":"<font>Pen-88/121/23</font>",
     "uk-GB35_Sentinel_AC_IV":"<font>Pen-171/239/38</font>",
+	"uk-GB37_Valliant":"<font>Pen-91/144/38</font>",
     "uk-GB39_Universal_CarrierQF2":"<font>Pen57/72/23</font>",
     "uk-GB40_Gun_Carrier_Churchill":"<font>Pen-220/252/47</font>",
     "uk-GB41_Challenger":"<font>Pen-220/252/38</font>",

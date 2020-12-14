@@ -469,6 +469,7 @@
     "uk-GB32_Tortoise":"<font>Dmg-400/400/515	</font>",
     "uk-GB33_Sentinel_AC_I":"<font>Dmg-45/45/60</font>",
     "uk-GB35_Sentinel_AC_IV":"<font>Dmg-150/150/190	</font>",
+	"uk-GB37_Valliant":"<font>Dmg-110/110/175</font>",
     "uk-GB39_Universal_CarrierQF2":"<font>Dmg-70/70/60</font>",
     "uk-GB40_Gun_Carrier_Churchill":"<font>Dmg-280/280/370	</font>",
     "uk-GB41_Challenger":"<font>Dmg-280/280/190</font>",

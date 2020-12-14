@@ -469,6 +469,7 @@
     "uk-GB32_Tortoise": "<b><font color='#FFD800'> 1942 </font></b>",
     "uk-GB33_Sentinel_AC_I": "<b><font color='#FFD800'> 1941 </font></b>",
     "uk-GB35_Sentinel_AC_IV": "<b><font color='#E743FF'> 1943 </font></b>",
+	"uk-GB37_Valliant": "<b><font color='#FFD800'> 1943 </font></b>",
     "uk-GB39_Universal_CarrierQF2": "<b><font color='#FFD800'> 1937 </font></b>",
     "uk-GB40_Gun_Carrier_Churchill": "<b><font color='#FFD800'> 1941 </font></b>",
     "uk-GB41_Challenger": "<b><font color='#FFD800'> 1942 </font></b>",
