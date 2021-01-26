@@ -5,28 +5,24 @@ from xfw_actionscript.python import *
 
 health = 0
 maxHealth = 0
-oldHealth = 0
 dmg = None
 vehicle = None
 
 
 @registerEvent(Vehicle, 'onHealthChanged')
-def onHealthChanged(self, newHealth, attackerID, attackReasonID):
+def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
     if self.isPlayerVehicle:
-        global health, dmg, oldHealth
+        global health, dmg
         health = max(0, newHealth)
-        if oldHealth != health:
-            dmg = oldHealth - health
-            oldHealth = health
+        dmg = oldHealth - health
         as_event('ON_MY_HP')
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
 def Vehicle_onEnterWorld(self, prereqs):
-    global maxHealth, health, vehicle, dmg, oldHealth
+    global maxHealth, health, vehicle, dmg
     if self.isPlayerVehicle:
         maxHealth = self.maxHealth
-        oldHealth = maxHealth
         health = self.health
         vehicle = self
         dmg = None
@@ -34,12 +30,12 @@ def Vehicle_onEnterWorld(self, prereqs):
 
 
 @xvm.export('my_hp.health', deterministic=False)
-def my_hp_health(_health=None):
+def my_hp_health(norm=None):
     if health is not None:
         if maxHealth != 0:
-            return health if _health is None else int(_health * health // maxHealth)
+            return health if norm is None else int(norm * health // maxHealth)
         else:
-            return health if _health is None else _health
+            return health if norm is None else norm
 
 
 @xvm.export('my_hp.maxHealth', deterministic=False)
