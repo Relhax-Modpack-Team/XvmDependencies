@@ -41,7 +41,7 @@ def PlayerAvatar_onEnterWorld(self, prereqs):
 
 
 @registerEvent(Vehicle, 'onHealthChanged', True)
-def onHealthChanged(self, newHealth, attackerID, attackReasonID):
+def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
     global deadPlayer, _vehicles
     if self.isAlive():
         return
