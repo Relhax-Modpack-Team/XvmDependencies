@@ -12,7 +12,6 @@ from constants import ATTACK_REASONS
 from chat_commands_consts import BATTLE_CHAT_COMMAND_NAMES
 from frameworks.wulf import WindowLayer
 from gui.shared.personality import ServicesLocator
-from gui.Scaleform.daapi.view.battle.shared.markers2d.vehicle_plugins import VehicleMarkerPlugin
 from gui.Scaleform.daapi.view.battle.shared.indicators import SixthSenseIndicator
 from gui.battle_control import avatar_getter
 from gui.shared.gui_items.Vehicle import VEHICLE_CLASS_NAME
@@ -109,8 +108,6 @@ def _SixthSenseIndicator__show(self):
 
 #TEAMDAMAGE
 
-vehiclesHP = {}
-
 def showTeamDamage(message):
     messageIn = battleMessagesConfig['teamDamage']['messageIn']
     if messageIn == 'chat':
@@ -121,32 +118,14 @@ def showTeamDamage(message):
             battle_page = ctrl.containerManager.getContainer(WindowLayer.VIEW).getView()
             battle_page.components['battlePlayerMessages'].as_showRedMessageS(None, message)
 
-@registerEvent(PlayerAvatar, 'onBecomeNonPlayer')
-def onBecomeNonPlayer(self):
-    global vehiclesHP
-    vehiclesHP = {}
-
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
-    global vehiclesHP
-    vehiclesHP.update({self.id: self.health})
-
-@registerEvent(VehicleMarkerPlugin, '_VehicleMarkerPlugin__onVehicleMarkerAdded')
-def __onVehicleMarkerAdded(self, vProxy, vInfo, guiProps):
-    global vehiclesHP
-    vehiclesHP.update({vProxy.id: vProxy.health})
-
-def teamDamage_onHealthChanged(self, newHealth, attackerID, attackReasonID):
-    global vehiclesHP
+def teamDamage_onHealthChanged(self, diffHealth, attackerID, attackReasonID):
     player = BigWorld.player()
     attacker = avatar_getter.getArena().vehicles.get(attackerID)
-    damage = vehiclesHP.get(self.id, 0) - max(0, newHealth)
-    vehiclesHP.update({self.id: newHealth})
-    if (None in (player, attacker)) or (damage <= battleMessagesConfig['teamDamage']['ignoreLessThan']):
+    if (None in (player, attacker)) or (diffHealth <= battleMessagesConfig['teamDamage']['ignoreLessThan']):
         return
     if (player.team == attacker['team'] == self.publicInfo.team) and (self.id != attackerID):
         message = _getL10n(battleMessagesConfig['teamDamage']['format'])
-        message = message.replace('{{damage}}', str(damage))
+        message = message.replace('{{damage}}', str(diffHealth))
         message = message.replace('{{damage-reason}}', l10n(ATTACK_REASONS[attackReasonID]))
         message = message.replace('{{victim-name}}', self.publicInfo.name)
         message = message.replace('{{victim-vehicle}}', self.typeDescriptor.type.shortUserString)
@@ -162,9 +141,9 @@ def teamDamage_onHealthChanged(self, newHealth, attackerID, attackReasonID):
             showTeamDamage(message)
 
 @registerEvent(Vehicle, 'onHealthChanged')
-def onHealthChanged(self, newHealth, attackerID, attackReasonID):
+def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
     if battleMessagesConfig['enabled'] and battleMessagesConfig['teamDamage']['enabled']:
-        teamDamage_onHealthChanged(self, newHealth, attackerID, attackReasonID)
+        teamDamage_onHealthChanged(self, oldHealth - newHealth, attackerID, attackReasonID)
 
 #CLIPCOOLDOWNTIMEMSGONRELOAD
 
