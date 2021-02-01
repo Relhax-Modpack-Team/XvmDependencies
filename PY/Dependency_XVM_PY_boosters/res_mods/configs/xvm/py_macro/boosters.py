@@ -16,11 +16,13 @@ from xfw.events import registerEvent, overrideMethod
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
 
+
 boostersName = dict.fromkeys(BTN.values())
 clanReservesName = dict.fromkeys(BTN.values())
 boosterEnabled = True
 unitH = ""
 unitM = ""
+unitS = ""
 
 autoReloadConfig = False
 isBattle = False
@@ -60,7 +62,7 @@ class Reserve(object):
 
 
 def readConfig():
-    global autoReloadConfig, boostersName, boosterEnabled, unitH, unitM
+    global autoReloadConfig, boostersName, boosterEnabled, unitH, unitM, unitS
     autoReloadConfig = config.get('autoReloadConfig')
     boosterEnabled = config.get('boosters/enabled', True)
     if boosterEnabled:
@@ -70,6 +72,7 @@ def readConfig():
             clanReservesName[k] = config.get('boosters/clanReservesName/{}'.format(k[8:]), None)
     unitH = config.get('boosters/unit/hour', 'ч')
     unitM = config.get('boosters/unit/minute', 'м')
+    unitS = config.get('boosters/unit/second', 'с')
 
 
 readConfig()
@@ -112,12 +115,17 @@ def clanReserv(index):
     return result
 
 
-def formatTime(leftTime):
+def formatTime(left_time):
     if autoReloadConfig:
         readConfig()
-    h, m = divmod(leftTime / 60, 60)
-    hStr = "{:d}{:s} ".format(h, unitH) if h > 0 else ""
-    return "{:s}{:d}{:s}".format(hStr, m, unitM)
+    h, m = divmod(left_time / 60, 60)
+    if h > 0:
+        return "{:d}{:s} {:d}{:s}".format(h, unitH, m, unitM)
+    elif m > 0:
+        return "{:d}{:s}".format(m, unitM)
+    else:
+        s = left_time % 60
+        return "{:d}{:s}".format(s, unitS) if s > 0 else None
 
 
 @overrideMethod(LobbyHeaderMeta, 'as_setBoosterDataS')
@@ -138,7 +146,7 @@ def as_setBoosterDataS(base, self, data):
 
 
 @registerEvent(PlayerAccount, 'onArenaCreated')
-def onArenaCreated(self):
+def PlayerAccount_onArenaCreated(self):
     global isBattle
     isBattle = True
 
@@ -150,7 +158,7 @@ def Hangar_populate(self):
 
 
 @xvm.export('bst.countBoosters', deterministic=False)
-def getCountBoosters():
+def countBoosters():
     global activeBoosters
     if not isBattle:
         activeBoosters = getActiveBoosters()
@@ -176,7 +184,7 @@ def leftTime(index=0):
 
 
 @xvm.export('bst.name', deterministic=False)
-def leftTime(index=0):
+def name(index=0):
     b = booster(index)
     if b is None:
         return None
@@ -195,7 +203,7 @@ def bst_type(index=0):
 
 
 @xvm.export('bst.countCR', deterministic=False)
-def getCountBoosters():
+def countCR():
     global activeClanReserves
     if not isBattle:
         activeClanReserves = goodiesCache.getClanReserves().values()
@@ -203,7 +211,7 @@ def getCountBoosters():
 
 
 @xvm.export('bst.leftTimeMinCR', deterministic=False)
-def leftTimeMin(index=0, norm=None):
+def leftTimeMinCR(index=0, norm=None):
     b = clanReserv(index)
     if b is not None:
         seconds = b.getUsageLeftTime()
@@ -212,7 +220,7 @@ def leftTimeMin(index=0, norm=None):
 
 
 @xvm.export('bst.leftTimeCR', deterministic=False)
-def leftTime(index=0):
+def leftTimeCR(index=0):
     b = clanReserv(index)
     if b is not None:
         return formatTime(b.getUsageLeftTime())
@@ -221,7 +229,7 @@ def leftTime(index=0):
 
 
 @xvm.export('bst.nameCR', deterministic=False)
-def leftTime(index=0):
+def nameCR(index=0):
     b = clanReserv(index)
     if b is None:
         return None
@@ -234,6 +242,6 @@ def leftTime(index=0):
 
 
 @xvm.export('bst.typeCR', deterministic=False)
-def bst_type(index=0):
+def bst_typeCR(index=0):
     b = clanReserv(index)
     return b.boosterGuiType if b is not None else None
