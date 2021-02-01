@@ -53,7 +53,7 @@ def hideCorners():
 
 
 @registerEvent(MapCaseMode, 'activateMapCase')
-def anglesAiming_activateMapCase(equipmentID, deactivateCallback, isArcadeCamera=False):
+def anglesAiming_activateMapCase(equipmentID, deactivateCallback):
     global isMapCas
     isMapCas = True
     hideCorners()
@@ -61,7 +61,7 @@ def anglesAiming_activateMapCase(equipmentID, deactivateCallback, isArcadeCamera
 
 
 @registerEvent(MapCaseMode, 'turnOffMapCase')
-def anglesAiming_turnOffMapCase(equipmentID, isArcadeCamera=False):
+def anglesAiming_turnOffMapCase(equipmentID):
     global isMapCas
     isMapCas = False
 
