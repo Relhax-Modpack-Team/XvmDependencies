@@ -159,7 +159,7 @@ def Vehicle_onEnterWorld(self, prereqs):
 
 
 @registerEvent(Vehicle, 'onHealthChanged')
-def onHealthChanged(self, newHealth, attackerID, attackReasonID):
+def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
     global targetHealth
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         if targetID is not None and targetID == self.id:
