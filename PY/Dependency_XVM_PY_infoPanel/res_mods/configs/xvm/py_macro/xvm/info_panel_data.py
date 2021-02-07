@@ -329,3 +329,8 @@ def pl_vision_radius():
     global _typeDescriptor
     _typeDescriptor = _playerVehicle.typeDescriptor
     return vision_radius()
+
+def pl_gun_aiming_time():
+    global _typeDescriptor
+    _typeDescriptor = _playerVehicle.typeDescriptor
+    return gun_aiming_time()

@@ -23,7 +23,8 @@ MACROS = [
     '{{invis_move_shot}}', '{{vision_radius}}', '{{radio_name}}', '{{radio_radius}}',
     '{{nation}}', '{{level}}', '{{rlevel}}',
     #
-    '{{pl_vehicle_weight}}', '{{pl_gun_reload}}', '{{pl_gun_reload_equip}}', '{{pl_gun_dpm}}', '{{pl_gun_dpm_equip}}', '{{pl_vision_radius}}'
+    '{{pl_vehicle_weight}}', '{{pl_gun_reload}}', '{{pl_gun_reload_equip}}', '{{pl_gun_dpm}}', '{{pl_gun_dpm_equip}}', '{{pl_vision_radius}}',
+    '{{pl_gun_aiming_time}}'
 ]
 
 ###
