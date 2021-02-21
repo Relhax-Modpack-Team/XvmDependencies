@@ -1,6 +1,6 @@
 import BigWorld
+import game
 import gui.Scaleform.daapi.view.battle.shared.crosshair.plugins as plug
-from Avatar import PlayerAvatar
 from Math import Vector3
 from Vehicle import Vehicle
 from VehicleGunRotator import VehicleGunRotator
@@ -12,7 +12,6 @@ import xvm_battle.python.battle as battle
 import xvm_main.python.config as config
 from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
-
 
 vehicle = None
 sphere = None
@@ -60,22 +59,23 @@ def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
             isAlive = False
 
 
-@registerEvent(PlayerAvatar, 'handleKey')
-def handleKey(self, isDown, key, mods):
+@registerEvent(game, 'handleKeyEvent')
+def game_handleKeyEvent(event):
+    global isDownHotkey
     if config.get('sight/enabled', True):# and isNotEvent:
-        global isDownHotkey
+        isDown, key, mods, isRepeat = game.convertKeyEvent(event)
         hotkey = config.get('sight/sphereDispersion/hotkey', None)
         if hotkey is not None and hotkey['enabled'] and (key == hotkey['keyCode']):
-            if isDown:
-                if hotkey['onHold']:
+            if hotkey['onHold']:
+                if isDown:
                     if not isDownHotkey:
                         isDownHotkey = True
                 else:
-                    isDownHotkey = not isDownHotkey
-            else:
-                if hotkey['onHold']:
                     if isDownHotkey:
                         isDownHotkey = False
+            else:
+                if isDown:
+                    isDownHotkey = not isDownHotkey
 
 
 @registerEvent(Vehicle, 'onEnterWorld')
@@ -92,7 +92,7 @@ def Vehicle_onEnterWorld(self, prereqs):
 
 
 @registerEvent(Vehicle, 'onHealthChanged')
-def onHealthChanged(self, newHealth, attackerID, attackReasonID):
+def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
     global isAlive
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         isAlive = self.isAlive()
