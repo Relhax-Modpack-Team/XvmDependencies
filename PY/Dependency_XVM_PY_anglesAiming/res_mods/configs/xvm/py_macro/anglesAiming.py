@@ -44,6 +44,8 @@ isMapCas = False
 old_gunAnglesPacked = 0
 smoothingID = None
 visible = True
+turretPitch = 0.0
+gunJointPitch = 0.0
 
 
 def hideCorners():
@@ -53,7 +55,7 @@ def hideCorners():
 
 
 @registerEvent(MapCaseMode, 'activateMapCase')
-def anglesAiming_activateMapCase(equipmentID, deactivateCallback):
+def anglesAiming_activateMapCase(equipmentID, deactivateCallback, isArcadeCamera=False):
     global isMapCas
     isMapCas = True
     hideCorners()
@@ -61,7 +63,7 @@ def anglesAiming_activateMapCase(equipmentID, deactivateCallback):
 
 
 @registerEvent(MapCaseMode, 'turnOffMapCase')
-def anglesAiming_turnOffMapCase(equipmentID):
+def anglesAiming_turnOffMapCase(equipmentID, isArcadeCamera=False):
     global isMapCas
     isMapCas = False
 
@@ -94,7 +96,7 @@ def StrategicAimingSystem_enable(self, targetPos):
 def onEnterWorld(self, prereqs):
     if self.isPlayerVehicle:
         global yaw, old_yaw, pitch, old_pitch, old_multiplier, leftLimits, rightLimits, smoothingID
-        global pitchStep, maxPitch, minPitch, minBound, maxBound, visible, isMapCas
+        global pitchStep, maxPitch, minPitch, minBound, maxBound, visible, isMapCas, turretPitch, gunJointPitch
         global old_gunAnglesPacked, isAlive, showHorCorners, showVerCorners, showCorners
         if battle.isBattleTypeSupported:
             # log('%s x %s    %s x %s' % (screenWidth(), screenHeight(), GUI.screenResolution()[0], GUI.screenResolution()[1]))
@@ -118,6 +120,8 @@ def onEnterWorld(self, prereqs):
             maxPitch = gun.pitchLimits['maxPitch']
             minPitch = gun.pitchLimits['minPitch']
             visible = True
+            turretPitch = self.typeDescriptor.hull.turretPitches[0]
+            gunJointPitch = self.typeDescriptor.turret.gunJointPitch
             updateCoordinates()
 
 
@@ -214,7 +218,7 @@ def coordinate(_yaw, _pitch):
         xLeft = - COORDINATE_OFF_SCREEN
         xRight = COORDINATE_OFF_SCREEN
     if showVerCorners:
-        pTop, pBottom = wg_calcGunPitchLimits(_yaw, minPitch, maxPitch)
+        pTop, pBottom = wg_calcGunPitchLimits(_yaw, minPitch, maxPitch, turretPitch, gunJointPitch)
         dif_pitch = pBottom - _pitch
         yBottom = int((scaleVert * dif_pitch + yVert) if dif_pitch > pitchStep else yVert)
         dif_pitch = pTop - _pitch
