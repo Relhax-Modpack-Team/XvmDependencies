@@ -92,8 +92,8 @@ def StrategicAimingSystem_enable(self, targetPos):
         updateCoordinates()
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle:
         global yaw, old_yaw, pitch, old_pitch, old_multiplier, leftLimits, rightLimits, smoothingID
         global pitchStep, maxPitch, minPitch, minBound, maxBound, visible, isMapCas, turretPitch, gunJointPitch
