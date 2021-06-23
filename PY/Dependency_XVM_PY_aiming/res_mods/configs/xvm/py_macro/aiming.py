@@ -1,9 +1,8 @@
-import math
-
 import BigWorld
+import math
 from Avatar import PlayerAvatar
-from Vehicle import Vehicle
 from AvatarInputHandler import AvatarInputHandler
+from Vehicle import Vehicle
 from aih_constants import CTRL_MODE_NAME
 
 import xvm_battle.python.battle as battle
@@ -30,9 +29,8 @@ def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
         as_event('ON_AIMING')
 
 
-
-@registerEvent(Vehicle, 'onEnterWorld')
-def aiming_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         global timeAIM, visible
         visible = True

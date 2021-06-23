@@ -78,8 +78,8 @@ def game_handleKeyEvent(event):
                     isDownHotkey = not isDownHotkey
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle and config.get('sight/enabled', True):
         global vehicle, _explosionRadius, isDisplaySphere, isDownHotkey, isAlive
         _explosionRadius = None

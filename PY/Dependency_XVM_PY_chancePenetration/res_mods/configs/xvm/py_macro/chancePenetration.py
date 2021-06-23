@@ -167,8 +167,8 @@ def _CrosshairShotResults_getShotResult(base, cls, hitPoint, collision, directio
         return base(hitPoint, collision, direction, excludeTeam)
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global piercingActual, armorActual, shotResult, hitAngle, normHitAngle, colorPiercingChance, piercingChance, visible
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         piercingActual = None

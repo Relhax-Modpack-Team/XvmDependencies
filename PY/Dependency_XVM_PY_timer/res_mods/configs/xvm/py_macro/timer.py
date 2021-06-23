@@ -5,8 +5,8 @@ import BigWorld
 timeBeginBattle = 0.0
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global timeBeginBattle
     if self.isPlayerVehicle:
         timeBeginBattle = BigWorld.serverTime()
@@ -18,3 +18,4 @@ def xvm_leftTime(lt=0):
     if timeBeginBattle == 0.0:
         timeBeginBattle = BigWorld.serverTime()
     return 'lt' if (BigWorld.serverTime() - timeBeginBattle) < lt else None
+	

@@ -18,8 +18,8 @@ def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
         as_event('ON_MY_HP')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global maxHealth, health, vehicle, dmg
     if self.isPlayerVehicle:
         maxHealth = self.maxHealth

@@ -90,8 +90,8 @@ def ServiceChannelManager__addServerMessage(self, message):
             as_event('ON_STATISTICS')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global arenaUniqueID, countBattle, isReplay
     if self.isPlayerVehicle:
         isReplay = BattleReplay.isPlaying()

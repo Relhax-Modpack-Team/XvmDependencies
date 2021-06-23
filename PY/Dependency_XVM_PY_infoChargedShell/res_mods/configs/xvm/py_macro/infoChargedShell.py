@@ -129,8 +129,8 @@ def infoChargedShell_onCurrentShellChanged(self, intCD):
         as_event('ON_AMMO_CHANGED')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         global visible, shellsSpeed
         shellsSpeed = {shot.shell.compactDescr: int(shot.speed * 1.25) for shot in self.typeDescriptor.gun.shots}

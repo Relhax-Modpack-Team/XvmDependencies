@@ -58,8 +58,8 @@ def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
         as_event('ON_CROSSHAIR')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global ownVehicle, getDistanceID, visible
     if self.isPlayerVehicle and config.get('sight/enabled', True) and self.isAlive() and battle.isBattleTypeSupported:
         ownVehicle = self

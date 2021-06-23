@@ -4,7 +4,6 @@ from helpers import dependency
 from skeletons.gui.battle_session import IBattleSessionProvider
 from gui.Scaleform.daapi.view.battle.shared.battle_timers import BattleTimer
 from gui.Scaleform.daapi.view.battle.epic.battle_timer import EpicBattleTimer
-from gui.battle_control.controllers.period_ctrl import ArenaPeriodController
 
 from xfw.events import registerEvent
 from xfw_actionscript.python import *
@@ -45,14 +44,10 @@ def PlayerAvatar__onArenaPeriodChange(self, period, periodEndTime, periodLength,
         as_event('ON_BATTLE_TIMER')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global minutes, seconds, startBattle
     if self.isPlayerVehicle and battle.isBattleTypeSupported:
-        # sessionProvider = dependency.instance(IBattleSessionProvider)
-        # minutes = None
-        # seconds = None
-        # startBattle = sessionProvider.shared.arenaPeriod.getPeriod()
         startBattle = self.guiSessionProvider.shared.arenaPeriod.getPeriod()
         as_event('ON_BATTLE_TIMER')
 

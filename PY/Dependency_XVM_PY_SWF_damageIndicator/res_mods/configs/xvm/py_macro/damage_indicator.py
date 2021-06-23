@@ -93,8 +93,8 @@ def _DamageIndicator_hideHitDirection(self, idx):
         as_event('ON_DAMAGE_INDICATOR')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle:
         global alpha, aim, di
         di = {}

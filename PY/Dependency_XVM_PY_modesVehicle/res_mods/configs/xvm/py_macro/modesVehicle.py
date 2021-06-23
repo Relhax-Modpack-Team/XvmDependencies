@@ -1,13 +1,13 @@
-from Vehicle import Vehicle
-from AvatarInputHandler.commands.siege_mode_control import SiegeModeControl
 from AvatarInputHandler import AvatarInputHandler
+from AvatarInputHandler.commands.siege_mode_control import SiegeModeControl
+from Vehicle import Vehicle
 from aih_constants import CTRL_MODE_NAME
 
-from xfw.events import registerEvent
-from xvm_main.python.logger import *
-from xfw_actionscript.python import *
-import xvm_main.python.config as config
 import xvm_battle.python.battle as battle
+import xvm_main.python.config as config
+from xfw.events import registerEvent
+from xfw_actionscript.python import *
+from xvm_main.python.logger import *
 
 NORMAL = 'normal'
 SPEED = 'speed'
@@ -36,8 +36,8 @@ def AvatarInputHandler_onControlModeChanged(self, eMode, **args):
         as_event('ON_VEHICLE_MODE')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global isWheeledTech, siegeMode, autoSiegeMode, hasAutoSiegeMode, hasSiegeMode, speedMode, visible
     if config.get('sight/enabled', True) and self.isPlayerVehicle and battle.isBattleTypeSupported:
         isWheeledTech = self.isWheeledTech

@@ -1,20 +1,20 @@
 import BigWorld
+import game
+import nations
 from Avatar import PlayerAvatar
 from Vehicle import Vehicle
-from helpers import dependency
-import nations
-from skeletons.gui.battle_session import IBattleSessionProvider
 from gui.Scaleform.daapi.view.battle.shared.ribbons_panel import BattleRibbonsPanel
 from gui.Scaleform.genConsts.BATTLE_EFFICIENCY_TYPES import BATTLE_EFFICIENCY_TYPES as BET
+from helpers import dependency
+from skeletons.gui.battle_session import IBattleSessionProvider
 
+import xvm_battle.python.battle as battle
+import xvm_main.python.config as config
+import xvm_main.python.userprefs as userprefs
+from xfw.events import registerEvent
 from xfw_actionscript.python import *
-from xfw.events import registerEvent, overrideMethod
 from xvm_main.python.logger import *
 from xvm_main.python.stats import _stat
-import xvm_main.python.config as config
-import xvm_battle.python.battle as battle
-import xvm_main.python.userprefs as userprefs
-
 
 import parser_addon
 from xvm.damageLog import VEHICLE_CLASSES, keyLower, RATINGS
@@ -407,7 +407,7 @@ class DataAssistLog(object):
         else:
             return False
 
-    def onEnterWorld(self, vehicle):
+    def onAppearanceReady(self, vehicle):
         self.player = BigWorld.player()
         self.data['hasStun'] = vehicle.typeDescriptor.shot.shell.hasStun
 
@@ -620,8 +620,8 @@ _backgroundLog = AssistLog(SECTION_BACKGROUND)
 _altBackgroundLog = AssistLog(SECTION_ALT_BACKGROUND)
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle and battle.isBattleTypeSupported:
         global chooseRating
         scale = config.networkServicesSettings.scale
@@ -631,7 +631,7 @@ def onEnterWorld(self, prereqs):
             chooseRating = RATINGS[r]['name']
         else:
             chooseRating = 'xwgr' if scale == 'xvm' else 'wgr'
-        _data.onEnterWorld(self)
+        _data.onAppearanceReady(self)
 
 
 @registerEvent(BattleRibbonsPanel, '_BattleRibbonsPanel__onRibbonUpdated')
@@ -668,25 +668,26 @@ def PlayerAvatar__destroyGUI(self):
         _altBackgroundLog.reset()
 
 
-@registerEvent(PlayerAvatar, 'handleKey')
-def PlayerAvatar_handleKey(self, isDown, key, mods):
+@registerEvent(game, 'handleKeyEvent')
+def game_handleKeyEvent(event):
     global isDownAlt
     if config.get(ENABLED, True) and battle.isBattleTypeSupported:
+        isDown, key, mods, isRepeat = game.convertKeyEvent(event)
         hotkey = config.get('hotkeys/assistLogAltMode', HOTKEYS)
         if hotkey['enabled'] and (key == hotkey['keyCode']):
-            if isDown:
-                if hotkey['onHold']:
+            if hotkey['onHold']:
+                if isDown:
                     if not isDownAlt:
                         isDownAlt = True
                         as_event('ON_ASSIST_LOG')
                 else:
-                    isDownAlt = not isDownAlt
-                    as_event('ON_ASSIST_LOG')
-            else:
-                if hotkey['onHold']:
                     if isDownAlt:
                         isDownAlt = False
                         as_event('ON_ASSIST_LOG')
+            else:
+                if isDown:
+                    isDownAlt = not isDownAlt
+                    as_event('ON_ASSIST_LOG')
 
 
 def getLog():

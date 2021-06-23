@@ -1,23 +1,20 @@
 from Avatar import PlayerAvatar
-from Vehicle import Vehicle
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
-from gui.Scaleform.daapi.view.meta.CrosshairPanelContainerMeta import CrosshairPanelContainerMeta
-from gui.Scaleform.daapi.view.battle.shared.vehicles.dualgun_component import DualGunComponent
 from AvatarInputHandler import AvatarInputHandler
+from Vehicle import Vehicle
 from aih_constants import CTRL_MODE_NAME
+from gui.Scaleform.daapi.view.battle.shared.vehicles.dualgun_component import DualGunComponent
+from gui.Scaleform.daapi.view.meta.CrosshairPanelContainerMeta import CrosshairPanelContainerMeta
 
-from xfw.events import registerEvent, overrideMethod
-from xvm_main.python.logger import *
-import xvm_main.python.config as config
-from xfw_actionscript.python import *
 import xvm_battle.python.battle as battle
-
+import xvm_main.python.config as config
+from xfw.events import registerEvent, overrideMethod
+from xfw_actionscript.python import *
+from xvm_main.python.logger import *
 
 quantityShells = None
 quantityInClipShells = None
 quantityInClipShellsMax = None
 burst = None
-playerVehicleID = None
 isAlive = True
 dualGunState = [False, False]
 isDualgunVehicle = False
@@ -55,9 +52,9 @@ def CrosshairPanelContainerMeta_as_setAmmoStockS(self, quantity, quantityInClip,
         as_event('ON_AMMO_COUNT')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
-    global quantityShells, quantityInClipShells, burst, quantityInClipShellsMax, playerVehicleID, isAlive, isDualgunVehicle, dualGunState, visible
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
+    global quantityShells, quantityInClipShells, burst, quantityInClipShellsMax, isAlive, isDualgunVehicle, dualGunState, visible
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         isAlive = self.isAlive()
         quantityShells = None
@@ -73,7 +70,6 @@ def Vehicle_onEnterWorld(self, prereqs):
                 gun = self.typeDescriptor.gun
                 quantityInClipShellsMax = gun.clip[0]
                 burst = gun.burst[0]
-            playerVehicleID = self.id
         else:
             quantityInClipShellsMax = None
             burst = None
@@ -90,17 +86,6 @@ def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isC
         quantityInClipShellsMax = None
         burst = None
         as_event('ON_AMMO_COUNT')
-
-# @registerEvent(FragsCollectableStats, 'addVehicleStatusUpdate')
-# def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
-#     global quantityShells, quantityInClipShells, burst, quantityInClipShellsMax, isAlive
-#     if (not vInfoVO.isAlive()) and (playerVehicleID == vInfoVO.vehicleID) and battle.isBattleTypeSupported:
-#         isAlive = False
-#         quantityShells = None
-#         quantityInClipShells = None
-#         quantityInClipShellsMax = None
-#         burst = None
-#         as_event('ON_AMMO_COUNT')
 
 
 @xvm.export('sight.quantityShells', deterministic=False)
@@ -120,11 +105,11 @@ def sight_quantityInClipShellsMax():
 
 @xvm.export('sight.isFullClipShells', deterministic=False)
 def sight_isFullClipShells():
-    result = (dualGunState[0] and dualGunState[1]) if isDualgunVehicle else (quantityInClipShellsMax is not None and (quantityInClipShellsMax == quantityInClipShells))
+    result = (dualGunState[0] and dualGunState[1]) if isDualgunVehicle else (
+                quantityInClipShellsMax is not None and (quantityInClipShellsMax == quantityInClipShells))
     return 'full' if result and visible else None
 
 
 @xvm.export('sight.burst', deterministic=False)
 def sight_burst():
     return burst if visible else None
-

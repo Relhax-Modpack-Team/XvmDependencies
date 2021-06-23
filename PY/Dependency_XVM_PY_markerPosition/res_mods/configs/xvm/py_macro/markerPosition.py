@@ -3,11 +3,11 @@ import traceback
 import BattleReplay
 import BigWorld
 from Avatar import PlayerAvatar
+from AvatarInputHandler import AvatarInputHandler
 from AvatarInputHandler.AimingSystems import CollisionStrategy, getCappedShotTargetInfos
 from Math import Vector3, Vector2
 from Vehicle import Vehicle
 from VehicleGunRotator import VehicleGunRotator
-from AvatarInputHandler import AvatarInputHandler
 from aih_constants import CTRL_MODE_NAME
 
 import xvm_battle.python.battle as battle
@@ -47,8 +47,8 @@ def PlayerAvatar_updateVehicleHealth(self, vehicleID, health, deathReasonID, isC
         as_event('ON_MARKER_POSITION')
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def Vehicle_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         global currentDistance, timeFlight, cameraHeight, visible
         currentDistance = None
@@ -69,7 +69,8 @@ def _VehicleGunRotator__getGunMarkerPosition(base, self, shotPos, shotVec, dispe
         testVehicleID = self.getAttachedVehicleID()
         collisionStrategy = CollisionStrategy.COLLIDE_DYNAMIC_AND_STATIC
         minBounds, maxBounds = BigWorld.player().arena.getSpaceBB()
-        endPos, direction, collData, usedMaxDistance = getCappedShotTargetInfos(shotPos, shotVec, gravity, shotDescr, testVehicleID, minBounds, maxBounds, collisionStrategy)
+        endPos, direction, collData, usedMaxDistance = getCappedShotTargetInfos(shotPos, shotVec, gravity, shotDescr, testVehicleID, minBounds, maxBounds,
+                                                                                collisionStrategy)
         distance = shotDescr.maxDistance if usedMaxDistance else (endPos - shotPos).length
         dispersAngle, idealDispersAngle = dispersionAngles
         doubleDistance = distance + distance
@@ -112,4 +113,3 @@ def sight_timeFlight():
 @xvm.export('sight.cameraHeight', deterministic=False)
 def sight_cameraHeight():
     return cameraHeight if visible else None
-

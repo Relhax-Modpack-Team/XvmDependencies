@@ -11,7 +11,7 @@ from xfw.events import registerEvent
 
 deadPlayer = {}
 players = {}
-_vehicles = None
+_vehicles = {}
 
 
 def update(vehicle):

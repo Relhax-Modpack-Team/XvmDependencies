@@ -138,8 +138,8 @@ battleEfficiency = battleEfficiency()
 
 ###
 
-@registerEvent(PlayerAvatar, 'vehicle_onEnterWorld')
-def vehicle_onEnterWorld(self, vehicle):
+@registerEvent(PlayerAvatar, 'vehicle_onAppearanceReady')
+def vehicle_onAppearanceReady(self, vehicle):
     if not battleEfficiencyConfig['enabled']:
         return
     

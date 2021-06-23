@@ -276,8 +276,8 @@ def as_setCooldownS(self, timeLeft):
         reloadingShot(round(timeLeft / 1000.0 - reloadTime, 2))
 
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def reloading_onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def _Vehicle__onAppearanceReady(self, appearance):
     global leftTime, reloadTime, endReloadTime, reloadTimeClip, isAutoReload, autoReloadTimes, increasedReload, gunsState, visible
     global quantityInClipShellsMax, quantityInClipShells, autoReloadLeftTime, autoReloadTime, tankmenAndDevicesReload, isDualGun, isGunBlocked
     global isAlive, reloadTimesClip, reloadTimerCallbackID, autoReloadTimerCallbackID, leftTimeShot, reloadShotTimerCallbackID, isPreparingSalvo
