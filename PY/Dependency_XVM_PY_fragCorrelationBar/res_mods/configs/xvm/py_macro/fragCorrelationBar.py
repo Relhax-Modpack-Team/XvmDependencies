@@ -1,23 +1,19 @@
+import BigWorld
+from Avatar import PlayerAvatar
+from constants import ARENA_GUI_TYPE, VEHICLE_CLASSES
+from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
+from gui.battle_control.arena_info.arena_dp import ArenaDataProvider
+from helpers import dependency
+from skeletons.account_helpers.settings_core import ISettingsCore
+
+import xvm_main.python.config as config
 from xfw.events import registerEvent
 from xfw_actionscript.python import *
 from xvm_main.python.logger import *
 from xvm_main.python.stats import _stat
-from xvm_main.python import stats
 
-from xvm.parser_addon import parser_addon
 from xvm.damageLog import RATINGS
-
-import BigWorld
-import time
-from Avatar import PlayerAvatar
-from Vehicle import Vehicle
-from gui.Scaleform.daapi.view.battle.classic.stats_exchange import FragsCollectableStats
-import xvm_main.python.config as config
-from helpers import dependency
-from skeletons.account_helpers.settings_core import ISettingsCore
-from constants import ARENA_GUI_TYPE
-from gui.Scaleform.daapi.view.battle.shared.minimap.plugins import ArenaVehiclesPlugin
-
+from xvm.parser_addon import parser_addon
 
 playersEnemyAlive = {}
 playersAllyAlive = {}
@@ -29,7 +25,7 @@ enemyVehicleAlive = None
 allyVehicleAlive = None
 enemyVehicleDead = None
 allyVehicleDead = None
-playerTeam = -1
+playerTeam = 0
 autoReloadConfig = False
 twoLine = False
 countAlly = 0
@@ -144,7 +140,6 @@ def getStats(name):
 
 def _event():
     if waitCallback:
-        # log('_event')
         as_event('ON_UPDATE_FRAG_COR_BAR')
 
 
@@ -156,19 +151,37 @@ def update(vInfoVO):
         readConfig()
     renameDict = {'lightTank': 'LT', 'mediumTank': 'MT', 'heavyTank': 'HT', 'SPG': 'SPG', 'AT-SPG': 'TD', None: 'unknown'}
 
-    if playerTeam < 0:
-        playerTeam = BigWorld.player().team
-    _vehicleID = vInfoVO.vehicleID
-    _vehicleType = vInfoVO.vehicleType
-    vehInfo = {'vehType': renameDict[_vehicleType.classTag],
+    if playerTeam < 1:
+        avatar = BigWorld.player()
+        if hasattr(avatar, 'team'):
+            playerTeam = avatar.team
+        else:
+            return
+
+    if isinstance(vInfoVO, dict):
+        _vehicleID = vInfoVO.get('vID', 0)
+        _vehicleType = vInfoVO['vehicleType'].type
+        classTag = list(_vehicleType.tags.intersection(VEHICLE_CLASSES))[0]
+        name = vInfoVO.get('name', None)
+        isAlly = 'ally' if playerTeam == vInfoVO.get('team', -1) else None
+        isAlive = bool(vInfoVO.get('isAlive', 1))
+    else:
+        _vehicleID = vInfoVO.vehicleID
+        _vehicleType = vInfoVO.vehicleType
+        classTag = _vehicleType.classTag
+        name = vInfoVO.player.name
+        isAlly = 'ally' if playerTeam == vInfoVO.team else None
+        isAlive = vInfoVO.isAlive()
+    vehInfo = {'vehType': renameDict[classTag],
                'level': _vehicleType.level,
                'c:r': '{{c:%s}}' % chooseRating,
-               'playerName': vInfoVO.player.name,
-               'ally': 'ally' if playerTeam == vInfoVO.team else None}
+               'playerName': name,
+               'ally': isAlly}
+
     isNewPlayerAlive = (_vehicleID in playersAllyAlive) or (_vehicleID in playersEnemyAlive)
     isNewPlayerDead = (_vehicleID in playersAllyDead) or (_vehicleID in playersEnemyDead)
-    if vInfoVO.isAlive() and not isNewPlayerAlive:
-        if vInfoVO.team == playerTeam:
+    if isAlive and not isNewPlayerAlive:
+        if isAlly is not None:
             vehInfo['vehTypeNumber'] = allyOrder.index(vehInfo['vehType'])
             playersAllyAlive[_vehicleID] = vehInfo
             countAlly += 1
@@ -179,8 +192,8 @@ def update(vInfoVO):
             countEnemy += 1
             enemyVehicleAlive = getAliveVehicle(playersEnemyAlive.values(), countEnemy >> 1, False)
         _event()
-    elif (not vInfoVO.isAlive()) and not isNewPlayerDead:
-        if vInfoVO.team == playerTeam:
+    elif (not isAlive) and not isNewPlayerDead:
+        if isAlly is not None:
             if _vehicleID in playersAllyAlive:
                 playersAllyDead[_vehicleID] = playersAllyAlive[_vehicleID]
                 del playersAllyAlive[_vehicleID]
@@ -199,7 +212,7 @@ def update(vInfoVO):
                 playersEnemyDead[_vehicleID] = vehInfo
             enemyVehicleDead = getDeadVehicle(playersEnemyDead.values(), countEnemy >> 1, False)
         _event()
-    elif (_vehicleType.classTag is not None) and isNewPlayerAlive:
+    elif (classTag is not None) and isNewPlayerAlive:
         if (_vehicleID in playersAllyAlive) and (playersAllyAlive[_vehicleID]['vehType'] == 'unknown'):
             vehInfo['vehTypeNumber'] = allyOrder.index(vehInfo['vehType'])
             playersAllyAlive[_vehicleID] = vehInfo
@@ -229,6 +242,7 @@ def getStat():
     enemyVehicleDead = getDeadVehicle(playersEnemyDead.values(), countEnemy >> 1, False)
     as_event('ON_UPDATE_FRAG_COR_BAR')
 
+
 @registerEvent(_stat, '_get_battle')
 def _get_battle():
     BigWorld.callback(0, getStat)
@@ -239,13 +253,24 @@ def FragsCollectableStats_addVehicleStatusUpdate(self, vInfoVO):
     update(vInfoVO)
 
 
+@registerEvent(ArenaDataProvider, '_ArenaDataProvider__addVehicleInfoVO')
+def __addVehicleInfoVO(self, vID, vInfoVO):
+    update(vInfoVO)
+
+
+@registerEvent(ArenaDataProvider, 'updateVehicleInfo')
+def updateVehicleInfo(self, vID, vInfo):
+    vInfo['vID'] = vID
+    update(vInfo)
+
+
 @registerEvent(PlayerAvatar, '_PlayerAvatar__destroyGUI')
 def PlayerAvatar__destroyGUI(self):
     global playersEnemyAlive, playersAllyAlive, playersEnemyDead, playersAllyDead, countAlly, countEnemy, aliveVehType, deadVehType, arenaGuiType
     global enemyOrder, allyOrder, enemyVehicleAlive, allyVehicleAlive, enemyVehicleDead, allyVehicleDead, playerTeam, chooseRating, waitCallback
     countAlly = 0
     countEnemy = 0
-    playerTeam = -1
+    playerTeam = 0
     arenaGuiType = None
     allyOrder = []
     enemyOrder = []
@@ -266,7 +291,6 @@ def PlayerAvatar__destroyGUI(self):
 @registerEvent(PlayerAvatar, 'onEnterWorld')
 def onEnterWorld(self, prereqs):
     global waitCallback
-    # log('onEnterWorld')
     waitCallback = True
     as_event('ON_UPDATE_FRAG_COR_BAR')
 
