@@ -73,13 +73,13 @@ def showEnemyArtyCooldown(attackerID):
             player.guiSessionProvider.shared.chatCommands.proto.arenaChat.broadcast(message, 0)
 
 @registerEvent(Vehicle, 'showDamageFromShot')
-def showDamageFromShot(self, attackerID, points, effectsIndex, damageFactor):
+def showDamageFromShot(self, attackerID, *args):
     if battleMessagesConfig['enabled'] and battleMessagesConfig['enemyArtyCooldown']['enabled']:
         if self.isPlayerVehicle and self.isAlive():
             showEnemyArtyCooldown(attackerID)
 
 @registerEvent(Vehicle, 'showDamageFromExplosion')
-def showDamageFromExplosion(self, attackerID, center, effectsIndex, damageFactor):
+def showDamageFromExplosion(self, attackerID, *args):
     if battleMessagesConfig['enabled'] and battleMessagesConfig['enemyArtyCooldown']['enabled']:
         if self.isPlayerVehicle and self.isAlive():
             showEnemyArtyCooldown(attackerID)
