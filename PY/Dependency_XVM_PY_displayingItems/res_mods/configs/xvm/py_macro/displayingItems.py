@@ -40,12 +40,12 @@ def SiegeModePlugin__updateView(self):
 @overrideMethod(CrosshairPanelContainerMeta, 'as_setViewS')
 def CrosshairPanelContainerMeta_as_setViewS(base, self, viewId, settingId):
     isHide = viewId == CROSSHAIR_VIEW_ID.POSTMORTEM and config.get('sight/hideSightAfterDeath', False) and config.get('sight/enabled', True)
-    return base(self, viewId, settingId) if not isHide else base(self, -1, -1)
+    return base(self, viewId, settingId) if not isHide else base(self, 0, settingId)
 
 
 @overrideMethod(plug, '_makeSettingsVO')
-def plugins_makeSettingsVO(base, settingsCore, *keys):
-    data = base(settingsCore, *keys)
+def plugins_makeSettingsVO(base, settingsCore):
+    data = base(settingsCore)
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         for mode in data:
             if config.get('sight/removeCentralMarker', False) and ('centerAlphaValue' in data[mode]):
