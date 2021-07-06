@@ -1,16 +1,16 @@
 ﻿import Keys
 from BigWorld import player
-from Avatar import PlayerAvatar
 from Vehicle import Vehicle
-from xfw import registerEvent
-from xfw_actionscript.python import as_event, as_callback
-from helpers import dependency
-from skeletons.gui.battle_session import IBattleSessionProvider
+from Avatar import PlayerAvatar
 from AvatarInputHandler import AvatarInputHandler
+from helpers import dependency
 from aih_constants import CTRL_MODE_NAME
+from skeletons.gui.battle_session import IBattleSessionProvider
 from gui.battle_control.avatar_getter import isVehicleInFire
 from gui.battle_control.battle_constants import VEHICLE_COMPLEX_ITEMS, VEHICLE_DEVICE_IN_COMPLEX_ITEM, VEHICLE_GUI_ITEMS
 from gui.Scaleform.daapi.view.battle.shared.damage_panel import DamagePanel
+from xfw import registerEvent
+from xfw_actionscript.python import as_event, as_callback
 
 ###
 
@@ -36,14 +36,6 @@ WHEEL7     = 'wheel7'
 #complex types
 CHASSIS = 'chassis' #custom
 WHEEL   = 'wheel'   #custom
-
-TRACKS = frozenset([
-    LEFTTRACK, RIGHTTRACK
-])
-
-WHEELS = frozenset([
-    WHEEL0, WHEEL1, WHEEL2, WHEEL3, WHEEL4, WHEEL5, WHEEL6, WHEEL7
-])
 
 COMMANDER = 'commander'
 RADIOMAN  = 'radioman'
@@ -168,17 +160,15 @@ class __RepairControlStorage(object):
 
 class RepairControlModule(__RepairControlStorage, object):
 
-    def __init__(self, isReset = False):
-        if not isReset:
-            for item in EVENTABLE_ITEMS:
-                as_callback(item, self.repairHandler)
-                as_callback(item + PREFIXES['over'], self.callbackOnMouseOver)
-                as_callback(item + PREFIXES['out'], self.callbackOnMouseOut)
-        
+    def __init__(self):
+        for item in EVENTABLE_ITEMS:
+            as_callback(item, self.repairHandler)
+            as_callback(item + PREFIXES['over'], self.callbackOnMouseOver)
+            as_callback(item + PREFIXES['out'], self.callbackOnMouseOut)
         super(RepairControlModule, self).__init__()
 
     def reset(self):
-        self.__init__(True)
+        super(RepairControlModule, self).__init__()
 
     def callbackOnMouseOver(self, data):
         self.selected = data['name']
@@ -264,10 +254,15 @@ RepairControl = RepairControlModule()
 
 ###
 
-@registerEvent(Vehicle, 'onEnterWorld')
-def onEnterWorld(self, prereqs):
+@registerEvent(Vehicle, '_Vehicle__onAppearanceReady')
+def onAppearanceReady(self, _):
     if self.isPlayerVehicle:
         RepairControl.setData(self)
+
+@registerEvent(PlayerAvatar, 'handleKey')
+def handleKey(self, isDown, key, mods):
+    if key == Keys.KEY_LCONTROL:
+        RepairControl.resetSelected()
 
 @registerEvent(Vehicle, '_Vehicle__onVehicleDeath')
 def onVehicleDeath(self, isDeadStarted = False):
@@ -293,11 +288,6 @@ def onControlModeChanged(self, eMode, **args):
 @registerEvent(PlayerAvatar, '_PlayerAvatar__destroyGUI')
 def destroyGUI(self):
     RepairControl.reset()
-
-@registerEvent(PlayerAvatar, 'handleKey')
-def handleKey(self, isDown, key, mods):
-    if key == Keys.KEY_LCONTROL:
-        RepairControl.resetSelected()
 
 ###
 
