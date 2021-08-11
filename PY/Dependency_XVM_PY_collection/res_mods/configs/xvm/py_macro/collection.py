@@ -16,10 +16,10 @@ _vehicles = {}
 
 def update(vehicle):
     global players
-
     vehType = vehicle['vehicleType']
     gun = vehType.gun
     _miscAttrs = vehType.miscAttrs
+    hardening = 'hardening' if vehicle['maxHealth'] > vehType.maxHealth or vehType.miscAttrs['healthFactor'] > 1.0 else None
     reloadVehicle = gun.reloadTime * _miscAttrs.get('gunReloadTimeFactor', 1) / (1.0695 + 0.0043 * _miscAttrs.get('crewLevelIncrease', 0))
     circularVisionRadius = vehType.turret.circularVisionRadius * _miscAttrs.get('circularVisionRadiusFactor', 1)
     piercingPower = [shot.piercingPower[0] for shot in gun.shots]
@@ -27,7 +27,8 @@ def update(vehicle):
     players[vehicle['name']] = {'reloadVehicle': reloadVehicle,
                                 'circularVisionRadius': circularVisionRadius,
                                 'damage': damage[0],
-                                'piercingPower': piercingPower[0]}
+                                'piercingPower': piercingPower[0],
+                                'hardening': hardening}
 
 
 @registerEvent(PlayerAvatar, 'onEnterWorld')
@@ -45,7 +46,7 @@ def onHealthChanged(self, newHealth, oldHealth, attackerID, attackReasonID):
     global deadPlayer, _vehicles
     if self.isAlive():
         return
-    if attackerID not in _vehicles:
+    if _vehicles is None or attackerID not in _vehicles:
         _vehicles = BigWorld.player().arena.vehicles
     attacker = _vehicles.get(attackerID, None)
     target = _vehicles.get(self.id, None)
@@ -101,3 +102,10 @@ def shellDamage(name):
     if name not in players:
         updatePlayer(name)
     return players[name].get('damage', None) if name in players else None
+
+
+@xvm.export('isHardening')
+def isHardening(name):
+    if name not in players:
+        updatePlayer(name)
+    return players[name].get('hardening', None) if name in players else None
