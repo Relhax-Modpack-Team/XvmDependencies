@@ -2,7 +2,6 @@ import BigWorld
 import game
 import Keys
 from gui import GUI_CTRL_MODE_FLAG
-from gui.Scaleform.daapi.view.battle.shared.ingame_menu import _ARENAS_WITHOUT_DEZERTER_PUNISHMENTS
 from helpers import dependency
 from skeletons.gui.battle_session import IBattleSessionProvider
 from messenger import MessengerEntry
@@ -12,10 +11,10 @@ from xfw.events import registerEvent
 from xvm_main.python.logger import *
 
 
-MODIFIERS = {'none':  0,
-             'shift': 1,
-             'ctrl':  2,
-             'alt':   4}
+MODIFIERS = {'none':  Keys.KEY_NONE,
+             'shift': Keys.MODIFIER_SHIFT,
+             'ctrl':  Keys.MODIFIER_CTRL,
+             'alt':   Keys.MODIFIER_ALT}
 
 
 @registerEvent(game, 'handleKeyEvent', True)
@@ -26,10 +25,12 @@ def game_handleKeyEvent(event):
         if MessengerEntry.g_instance.gui.isFocused():
             return
         isDown, key, mods, isRepeat = game.convertKeyEvent(event)
-        if key == hotkey.get('keyCode', Keys.KEY_F4) and isDown and not isRepeat and mods == MODIFIERS.get(hotkey.get('modifier', 'none').lower()):
+        if key == hotkey.get('keyCode', Keys.KEY_F4) and isDown and not isRepeat:
+            modifier = str(hotkey.get('modifier', 'none')).lower()
+            if mods != MODIFIERS.get(modifier, 'none'):
+                return
             exitResult = sessionProvider.getExitResult()
-            arenaType = sessionProvider.arenaVisitor.getArenaGuiType()
-            if exitResult.isDeserter and arenaType not in _ARENAS_WITHOUT_DEZERTER_PUNISHMENTS:
+            if exitResult.isDeserter:
                 return
             # BigWorld.player().setForcedGuiControlMode(GUI_CTRL_MODE_FLAG.CURSOR_VISIBLE)
             sessionProvider.exit()
