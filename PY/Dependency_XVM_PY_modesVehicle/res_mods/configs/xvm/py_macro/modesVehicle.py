@@ -42,7 +42,9 @@ def _Vehicle__onAppearanceReady(self, appearance):
     if config.get('sight/enabled', True) and self.isPlayerVehicle and battle.isBattleTypeSupported:
         isWheeledTech = self.isWheeledTech
         hasAutoSiegeMode = self.typeDescriptor.hasAutoSiegeMode
-        hasSiegeMode = not (hasAutoSiegeMode or isWheeledTech) and self.typeDescriptor.hasSiegeMode
+        isDualgunVehicle = self.typeDescriptor.isDualgunVehicle
+        hasTurboshaftEngine = self.typeDescriptor.hasTurboshaftEngine
+        hasSiegeMode = not (hasAutoSiegeMode or isWheeledTech or isDualgunVehicle or hasTurboshaftEngine) and self.typeDescriptor.hasSiegeMode
         speedMode = NORMAL
         siegeMode = NORMAL
         autoSiegeMode = NORMAL
