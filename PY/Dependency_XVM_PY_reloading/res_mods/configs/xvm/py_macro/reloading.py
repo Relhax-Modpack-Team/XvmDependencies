@@ -146,18 +146,6 @@ def reloading__onGunReloadTimeSet(self, _, state):
     # log('onGunReloadTimeSet    hasAutoReload = %s    leftTeme = %s    getActualValue = %s    getBaseValue = %s' % (self._AmmoPlugin__guiSettings.hasAutoReload, state.getTimeLeft(), state.getActualValue(), state.getBaseValue()))
 
 
-@registerEvent(AmmoPlugin, '_AmmoPlugin__onGunAutoReloadTimeSet')
-def reloading__onGunAutoReloadTimeSet(self, state, stunned):
-    if config.get('sight/enabled', True) and isAutoReload and not isDualGun and battle.isBattleTypeSupported and isAlive:
-        # autoReloading(state.getTimeLeft(), state.getBaseValue())
-        # log('onGunAutoReloadTimeSet     leftTeme = %s   getActualValue = %s    baseTime = %s' % (state.getTimeLeft(), state.getActualValue(), state.getBaseValue()))
-
-        autoReloading(state.getTimeLeft(), state.getBaseValue())
-
-    # log('__onGunAutoReloadTimeSet: getBaseValue = %s, getActualValue = %s, getTimeLeft = %s' % (state.getBaseValue(), state.getActualValue(), state.getTimeLeft()))
-    # log('state= %s' % (filter(lambda x: not x.startswith('_'), dir(state))))
-
-
 @registerEvent(CrosshairPanelContainerMeta, 'as_setAmmoStockS')
 def reloading_as_setAmmoStockS(self, quantity, quantityInClip, isLow, clipState, clipReloaded):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported and not isDualGun and isAlive:
@@ -172,10 +160,11 @@ def reloading_as_setReloadingS(self, duration, baseTime, startTime, isReloading)
         reloading(duration, baseTime, startTime)
 
 
-@registerEvent(AmmoReplayPlayer, 'setGunAutoReloadTime')
-def reloading_setGunAutoReloadTime(self, timeLeft, baseTime, isSlowed, isBoostApplicable):
+@registerEvent(PlayerAvatar, 'updateVehicleGunReloadTime')
+def updateVehicleGunReloadTime(self, vehicleID, timeLeft, baseTime):
+    # log('updateVehicleGunReloadTime')
     if config.get('sight/enabled', True) and isAutoReload and not isDualGun and battle.isBattleTypeSupported and isAlive:
-        # log('setGunAutoReloadTime =    leftTeme = %s  baseTime = %s' % (timeLeft, baseTime))
+        # log('updateVehicleGunReloadTime =    leftTeme = %s  baseTime = %s' % (timeLeft, baseTime))
         autoReloading(timeLeft, baseTime)
 
 
@@ -219,6 +208,7 @@ def reloading_updateDeviceState(self, value):
 @registerEvent(DualGunPanelMeta, 'as_updateTotalTimeS')
 def as_updateTotalTimeS(self, value):
     global autoReloadTime
+    # log('as_updateTotalTimeS   value = %s' % value)
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported and isAlive:
         value = round(value / 1000.0, 2)
         if autoReloadTime != value:
@@ -229,6 +219,7 @@ def as_updateTotalTimeS(self, value):
 @registerEvent(DualGunPanelMeta, 'as_setGunStateS')
 def as_setGunStateS(self, gunId, state, timeLeft, totalTime):
     global reloadTime, reloadShotTimerCallbackID, leftTimeShot
+    # log('as_setGunStateS | gunId = %s, state = %s, timeLeft = %s, totalTime = %s' % (gunId, state, timeLeft, totalTime))
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported and isAlive:
         if reloadTime is None:
             reloadTime = round(totalTime / 1000.0, 2)
@@ -239,21 +230,40 @@ def as_setGunStateS(self, gunId, state, timeLeft, totalTime):
         gunsState[gunId] = (state == 3)
 
 
+@registerEvent(PlayerAvatar, 'updateDualGunState')
+def updateDualGunState(self, vehicleID, activeGun, gunStates, cooldownTimes):
+    global reloadTime, reloadShotTimerCallbackID, leftTimeShot, isGunBlocked, autoReloadTime
+    # log('updateDualGunState | vehicleID = %s, activeGun = %s, gunStates = %s, cooldownTimes = %s' % (vehicleID, activeGun, gunStates, cooldownTimes))
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported and isAlive:
+        update = False
+        if reloadTime is None:
+            reloadTime = round(cooldownTimes[activeGun]['baseTime'] / 10.0, 2)
+            update = True
+        if autoReloadTime is None:
+            autoReloadTime = round((cooldownTimes[0]['baseTime'] + cooldownTimes[1]['baseTime']) / 10.0, 2)
+            update = True
+        if update:
+            as_event('ON_RELOAD')
+
+
 @registerEvent(DualGunPanelMeta, 'as_updateActiveGunS')
 def as_updateActiveGunS(self, activeGunId, timeLeft, totalTime):
     global isGunBlocked
-    if (gunsState[0] + gunsState[1]) == 1:
-        if timeLeft > 0:
-            isGunBlocked = True
-            reloadingShot(round(timeLeft / 1000.0, 2))
-        elif isGunBlocked:
-            isGunBlocked = False
-            as_event('ON_RELOAD')
+    # log('as_updateActiveGunS | activeGunId = %s, timeLeft = %s, totalTime = %s' % (activeGunId, timeLeft, totalTime))
+    if config.get('sight/enabled', True) and battle.isBattleTypeSupported and isAlive:
+        if (gunsState[0] + gunsState[1]) == 1:
+            if timeLeft > 0:
+                isGunBlocked = True
+                reloadingShot(round(timeLeft / 1000.0, 2))
+            elif isGunBlocked:
+                isGunBlocked = False
+                as_event('ON_RELOAD')
 
 
 @registerEvent(DualGunPanelMeta, 'as_startChargingS')
 def as_startChargingS(self, timeLeft, totalTime):
     global isPreparingSalvo
+    # log('as_startChargingS timeLeft = %s, totalTime = %s' % (timeLeft, totalTime))
     if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 2:
         isPreparingSalvo = True
         reloadingShot(round(timeLeft / 1000.0, 2))
@@ -262,6 +272,7 @@ def as_startChargingS(self, timeLeft, totalTime):
 @registerEvent(DualGunPanelMeta, 'as_cancelChargeS')
 def as_cancelChargeS(self):
     global reloadShotTimerCallbackID, isPreparingSalvo, leftTimeShot
+    # log('as_cancelChargeS')
     isPreparingSalvo = False
     leftTimeShot = 0.0
     reloadShotTimerCallbackID = resetCallback(reloadShotTimerCallbackID)
@@ -271,6 +282,7 @@ def as_cancelChargeS(self):
 @registerEvent(DualGunPanelMeta, 'as_setCooldownS')
 def as_setCooldownS(self, timeLeft):
     global isPreparingSalvo
+    # log('as_setCooldownS  timeLeft = %s' % timeLeft)
     if timeLeft > 0 and (gunsState[0] + gunsState[1]) == 0:
         isPreparingSalvo = False
         reloadingShot(round(timeLeft / 1000.0 - reloadTime, 2))
@@ -283,6 +295,7 @@ def _Vehicle__onAppearanceReady(self, appearance):
     global isAlive, reloadTimesClip, reloadTimerCallbackID, autoReloadTimerCallbackID, leftTimeShot, reloadShotTimerCallbackID, isPreparingSalvo
     if self.isPlayerVehicle and config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         isAlive = True
+        # log('_Vehicle__onAppearanceReady')
         leftTime = None
         leftTimeShot = None
         reloadTime = None
@@ -299,11 +312,11 @@ def _Vehicle__onAppearanceReady(self, appearance):
         # log('tankmenAndDevicesReload = %s' % tankmenAndDevicesReload)
         # for i, v in enumerate(self.typeDescriptor.type.crewRoles):
         #     log('typeDescriptor.type.crewRoles[%s] = %s' % (i, v))
-
+        isDualGun = self.typeDescriptor.isDualgunVehicle
         quantityInClipShells = 0
         quantityInClipShellsMax = 2 if isDualGun else gun.clip[0]
         isAutoReload = (gun.autoreload.reloadTime[0] != 0.0)
-        isDualGun = self.typeDescriptor.isDualgunVehicle
+
         if isAutoReload:
             autoReloadTimes = list(gun.autoreload.reloadTime)
             reloadTimesClip = []
@@ -364,15 +377,25 @@ def sight_leftTime(norm=None):
     if norm is None:
         return leftTime
     elif reloadTime is not None:
-        return 0 if reloadTime == 0.0 else int((reloadTime - leftTime) * norm // reloadTime)
+        if reloadTime == 0.0:
+            return 0
+        elif leftTime is not None:
+            return int((reloadTime - leftTime) * norm // reloadTime)
+        else:
+            return None
     else:
         return None
 
 
 @xvm.export('sight.reloadPercent', deterministic=False)
 def sight_reloadPercent():
-    if reloadTime is not None and leftTime is not None and visible:
-        return 0 if reloadTime == 0 else int((reloadTime - leftTime) * 100 // reloadTime)
+    if (reloadTime is not None) and visible:
+        if reloadTime == 0.0:
+            return 0
+        elif leftTime is not None:
+            return int((reloadTime - leftTime) * 100 // reloadTime)
+        else:
+            return None
     return None
 
 
@@ -390,7 +413,7 @@ def sight_reloadTimeClip():
 def sight_aleftTime(norm=None):
     if not visible:
         return None
-    if isDualGun and reloadTime is not None and leftTime is not None:
+    if isDualGun and (reloadTime is not None) and (leftTime is not None):
         _leftTime = leftTime if (gunsState[0] + gunsState[1]) > 0 else leftTime + reloadTime
         if norm is None:
             return _leftTime
@@ -400,6 +423,8 @@ def sight_aleftTime(norm=None):
         if norm is None:
             return autoReloadLeftTime
         else:
+            if autoReloadTime is None:
+                return None
             return 0 if autoReloadTime == 0.0 else int((autoReloadTime - autoReloadLeftTime) * norm // autoReloadTime)
     return None
 
