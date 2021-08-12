@@ -140,7 +140,7 @@ def reloadingShot(duration):
 
 
 @registerEvent(AmmoPlugin, '_AmmoPlugin__onGunReloadTimeSet')
-def reloading__onGunReloadTimeSet(self, _, state):
+def reloading__onGunReloadTimeSet(self, _, state, skipAutoLoader):
     if config.get('sight/enabled', True) and self._AmmoPlugin__guiSettings.hasAutoReload and not isDualGun and battle.isBattleTypeSupported and isAlive:
         reloadingShot(state.getTimeLeft())
     # log('onGunReloadTimeSet    hasAutoReload = %s    leftTeme = %s    getActualValue = %s    getBaseValue = %s' % (self._AmmoPlugin__guiSettings.hasAutoReload, state.getTimeLeft(), state.getActualValue(), state.getBaseValue()))
