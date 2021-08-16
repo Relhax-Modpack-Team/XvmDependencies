@@ -37,7 +37,7 @@ def _AmmoPlugin__onGunAutoReloadTimeSet(self, state, stunned):
 
 
 @registerEvent(AmmoReplayPlayer, 'setGunReloadTime')
-def AmmoReplayPlayer_setGunReloadTime(self, timeLeft, baseTime):
+def AmmoReplayPlayer_setGunReloadTime(self, timeLeft, baseTime, skipAutoLoader=False):
     if config.get('sight/enabled', True) and battle.isBattleTypeSupported:
         explosionRadius()
 
