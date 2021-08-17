@@ -169,7 +169,7 @@ def updateVehicleGunReloadTime(self, vehicleID, timeLeft, baseTime):
 
 
 @registerEvent(AmmoReplayPlayer, 'setGunReloadTime')
-def reloading_setGunReloadTime(self, timeLeft, baseTime):
+def reloading_setGunReloadTime(self, timeLeft, baseTime, skipAutoLoader=False):
     if config.get('sight/enabled', True) and not isAutoReload and not isDualGun and battle.isBattleTypeSupported and isAlive:
         # log('setGunReloadTime =    leftTeme = %s  baseTime = %s' % (timeLeft, baseTime))
         reloading(timeLeft, baseTime)
