@@ -1,8 +1,8 @@
-import game
 import Keys
+import game
+from messenger import MessengerEntry
 from messenger import g_settings
 from messenger.gui.Scaleform.battle_entry import BattleEntry
-from messenger import MessengerEntry
 from messenger.gui.Scaleform.channels.layout import BattleLayout
 
 import xvm_main.python.config as config
@@ -16,11 +16,12 @@ MODIFIERS = {'none':  Keys.KEY_NONE,
              'alt':   Keys.MODIFIER_ALT}
 
 isChatDisabled = False
+isChatHide = False
 
 
 @registerEvent(game, 'handleKeyEvent', True)
 def game_handleKeyEvent(event):
-    global isChatDisabled
+    global isChatDisabled, isChatHide
     hotkeyHide = config.get('hotkeys/hideBattleChat', {'enabled': True, 'keyCode': Keys.KEY_H, 'modifier': 'none'})
     gui = MessengerEntry.g_instance.gui
     if gui.isFocused():
@@ -35,7 +36,9 @@ def game_handleKeyEvent(event):
             if isinstance(entry, BattleEntry):
                 view = entry._BattleEntry__view()
                 if view is not None:
-                    view.flashObject.visible = not view.flashObject.visible
+                    isChatHide = not isChatHide
+                    view.flashObject.visible = not isChatHide
+
 
     hotkeyDisable = config.get('hotkeys/disableBattleChat', {'enabled': True, 'keyCode': Keys.KEY_O, 'modifier': 'none'})
     if hotkeyDisable.get('enabled', True):
@@ -51,6 +54,7 @@ def game_handleKeyEvent(event):
                     isChatDisabled = not isChatDisabled
                     g_settings.userPrefs._replace(disableBattleChat=isChatDisabled)
                     view.invalidateReceivers()
+
 
 
 @overrideMethod(BattleLayout, 'isEnabled')
