@@ -3,7 +3,7 @@ from math import pi
 import BigWorld
 from AvatarInputHandler.control_modes import ArcadeControlMode, SniperControlMode, StrategicControlMode
 from Vehicle import Vehicle
-from gui.Scaleform.daapi.view.battle.shared.indicators import _DamageIndicator, DamageIndicatorMeta
+from gui.Scaleform.daapi.view.battle.shared.indicators import DamageIndicator, DamageIndicatorMeta
 
 from xfw.events import registerEvent, overrideMethod
 from xfw_actionscript.python import *
@@ -69,13 +69,13 @@ def sniperHandleMouseEvent(self, dx, dy, dz):
             as_event('ON_DAMAGE_INDICATOR')
 
 
-@overrideMethod(_DamageIndicator, 'getDuration')
-def _DamageIndicator_getDuration(base, self):
+@overrideMethod(DamageIndicator, 'getDuration')
+def DamageIndicator_getDuration(base, self):
     return 12
 
 
-@registerEvent(_DamageIndicator, 'showHitDirection')
-def _DamageIndicator_showHitDirection(self, idx, hitData, timeLeft):
+@registerEvent(DamageIndicator, 'showHitDirection')
+def DamageIndicator_showHitDirection(self, idx, hitData, timeLeft):
     global alpha, di
     di[idx] = hitData.getYaw()
     if alpha == 0:
@@ -83,8 +83,8 @@ def _DamageIndicator_showHitDirection(self, idx, hitData, timeLeft):
         as_event('ON_DAMAGE_INDICATOR')
 
 
-@registerEvent(_DamageIndicator, 'hideHitDirection')
-def _DamageIndicator_hideHitDirection(self, idx):
+@registerEvent(DamageIndicator, 'hideHitDirection')
+def DamageIndicator_hideHitDirection(self, idx):
     global alpha, di
     if idx in di:
         del di[idx]
